@@ -7,6 +7,7 @@ import { Users, Trophy, Zap, TrendingUp, Settings, Bell, Award, Target, Gift, St
 import SchemeManagement from "./SchemeManagement";
 import UserManagement from "./UserManagement";
 import RuleEngine from "./RuleEngine";
+import ReportingDashboard from "./ReportingDashboard";
 import { useState } from "react";
 
 const Dashboard = () => {
@@ -97,6 +98,14 @@ const Dashboard = () => {
               <Target className="mr-2 h-4 w-4" />
               Rule Engine
             </Button>
+            <Button 
+              variant={activeTab === "reporting" ? "enterprise" : "ghost"} 
+              className="w-full justify-start"
+              onClick={() => setActiveTab("reporting")}
+            >
+              <Award className="mr-2 h-4 w-4" />
+              Reporting
+            </Button>
             <Button variant="ghost" className="w-full justify-start">
               <Gift className="mr-2 h-4 w-4" />
               Rewards Catalog
@@ -106,7 +115,7 @@ const Dashboard = () => {
               Communications
             </Button>
             <Button variant="ghost" className="w-full justify-start">
-              <Award className="mr-2 h-4 w-4" />
+              <TrendingUp className="mr-2 h-4 w-4" />
               Analytics
             </Button>
           </div>
@@ -276,6 +285,7 @@ const Dashboard = () => {
           {activeTab === "schemes" && <SchemeManagement />}
           {activeTab === "users" && <UserManagement />}
           {activeTab === "rules" && <RuleEngine />}
+          {activeTab === "reporting" && <ReportingDashboard />}
     </main>
       </div>
     </div>
