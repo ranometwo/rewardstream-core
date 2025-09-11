@@ -9,9 +9,11 @@ import UserManagement from "./UserManagement";
 import RuleEngine from "./RuleEngine";
 import ReportingDashboard from "./ReportingDashboard";
 import { useState } from "react";
+import { Menu } from "lucide-react";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   // Mock data for analytics
   const monthlyData = [
     { month: 'Jan', points: 12000, users: 850, schemes: 5 },
@@ -41,6 +43,14 @@ const Dashboard = () => {
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="flex h-16 items-center justify-between px-6">
           <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="hover:bg-accent"
+            >
+              <Menu className="h-4 w-4" />
+            </Button>
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-lg bg-gradient-primary flex items-center justify-center">
                 <Trophy className="h-4 w-4 text-primary-foreground" />
@@ -64,59 +74,59 @@ const Dashboard = () => {
 
       <div className="flex">
         {/* Sidebar Navigation */}
-        <nav className="w-64 border-r border-border bg-card/30 backdrop-blur-sm min-h-[calc(100vh-4rem)] p-4">
+        <nav className={`${sidebarCollapsed ? 'w-16' : 'w-64'} border-r border-border bg-card/30 backdrop-blur-sm min-h-[calc(100vh-4rem)] p-4 transition-all duration-300`}>
           <div className="space-y-2">
             <Button 
               variant={activeTab === "dashboard" ? "enterprise" : "ghost"} 
-              className="w-full justify-start"
+              className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}
               onClick={() => setActiveTab("dashboard")}
             >
-              <TrendingUp className="mr-2 h-4 w-4" />
-              Dashboard
+              <TrendingUp className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
+              {!sidebarCollapsed && "Dashboard"}
             </Button>
             <Button 
               variant={activeTab === "schemes" ? "enterprise" : "ghost"} 
-              className="w-full justify-start"
+              className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}
               onClick={() => setActiveTab("schemes")}
             >
-              <Zap className="mr-2 h-4 w-4" />
-              Scheme Management
+              <Zap className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
+              {!sidebarCollapsed && "Scheme Management"}
             </Button>
             <Button 
               variant={activeTab === "users" ? "enterprise" : "ghost"} 
-              className="w-full justify-start"
+              className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}
               onClick={() => setActiveTab("users")}
             >
-              <Users className="mr-2 h-4 w-4" />
-              User Management
+              <Users className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
+              {!sidebarCollapsed && "User Management"}
             </Button>
             <Button 
               variant={activeTab === "rules" ? "enterprise" : "ghost"} 
-              className="w-full justify-start"
+              className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}
               onClick={() => setActiveTab("rules")}
             >
-              <Target className="mr-2 h-4 w-4" />
-              Rule Engine
+              <Target className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
+              {!sidebarCollapsed && "Rule Engine"}
             </Button>
             <Button 
               variant={activeTab === "reporting" ? "enterprise" : "ghost"} 
-              className="w-full justify-start"
+              className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}
               onClick={() => setActiveTab("reporting")}
             >
-              <Award className="mr-2 h-4 w-4" />
-              Reporting
+              <Award className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
+              {!sidebarCollapsed && "Reporting"}
             </Button>
-            <Button variant="ghost" className="w-full justify-start">
-              <Gift className="mr-2 h-4 w-4" />
-              Rewards Catalog
+            <Button variant="ghost" className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}>
+              <Gift className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
+              {!sidebarCollapsed && "Rewards Catalog"}
             </Button>
-            <Button variant="ghost" className="w-full justify-start">
-              <Bell className="mr-2 h-4 w-4" />
-              Communications
+            <Button variant="ghost" className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}>
+              <Bell className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
+              {!sidebarCollapsed && "Communications"}
             </Button>
-            <Button variant="ghost" className="w-full justify-start">
-              <TrendingUp className="mr-2 h-4 w-4" />
-              Analytics
+            <Button variant="ghost" className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}>
+              <TrendingUp className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
+              {!sidebarCollapsed && "Analytics"}
             </Button>
           </div>
         </nav>
