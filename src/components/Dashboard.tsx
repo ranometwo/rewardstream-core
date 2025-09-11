@@ -43,14 +43,6 @@ const Dashboard = () => {
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="flex h-16 items-center justify-between px-6">
           <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="hover:bg-accent"
-            >
-              <Menu className="h-4 w-4" />
-            </Button>
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-lg bg-gradient-primary flex items-center justify-center">
                 <Trophy className="h-4 w-4 text-primary-foreground" />
@@ -74,8 +66,20 @@ const Dashboard = () => {
 
       <div className="flex">
         {/* Sidebar Navigation */}
-        <nav className={`${sidebarCollapsed ? 'w-16' : 'w-64'} border-r border-border bg-card/30 backdrop-blur-sm min-h-[calc(100vh-4rem)] p-4 transition-all duration-300`}>
-          <div className="space-y-2">
+        <nav className={`${sidebarCollapsed ? 'w-16' : 'w-64'} border-r border-border bg-card/30 backdrop-blur-sm min-h-[calc(100vh-4rem)] transition-all duration-300 relative`}>
+          {/* Collapse Icon */}
+          <div className="absolute top-4 right-3 z-10">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="h-6 w-6 hover:bg-accent"
+            >
+              <Menu className="h-3 w-3" />
+            </Button>
+          </div>
+          
+          <div className="space-y-2 pt-4 px-4">
             <Button 
               variant={activeTab === "dashboard" ? "enterprise" : "ghost"} 
               className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}
@@ -128,7 +132,7 @@ const Dashboard = () => {
               <TrendingUp className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
               {!sidebarCollapsed && "Analytics"}
             </Button>
-          </div>
+           </div>
         </nav>
 
         {/* Main Content */}

@@ -314,7 +314,7 @@ const ReportingDashboard = () => {
       </div>
 
       {/* Filters Sidebar */}
-      <div className={`fixed top-0 right-0 h-full w-96 bg-card border-l border-border transform transition-transform duration-300 ${filtersOpen ? 'translate-x-0' : 'translate-x-full'} z-40 overflow-auto`}>
+      <div className={`fixed top-0 right-0 h-full w-96 bg-card border-l border-border transform transition-transform duration-300 ${filtersOpen ? 'translate-x-0' : 'translate-x-full'} z-[60] overflow-auto`}>
         <div className="p-6 space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
