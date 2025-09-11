@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import { Users, Trophy, Zap, TrendingUp, Settings, Bell, Award, Target, Gift, Star } from "lucide-react";
 import SchemeManagement from "./SchemeManagement";
@@ -64,79 +65,89 @@ const Dashboard = () => {
         </div>
       </header>
 
-      <div className="flex">
+      <ResizablePanelGroup direction="horizontal" className="min-h-[calc(100vh-4rem)]">
         {/* Sidebar Navigation */}
-        <nav className={`${sidebarCollapsed ? 'w-16' : 'w-64'} border-r border-border bg-card/30 backdrop-blur-sm min-h-[calc(100vh-4rem)] transition-all duration-300 relative`}>
-          {/* Collapse Icon */}
-          <div className="absolute top-4 right-3 z-10">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="h-6 w-6 hover:bg-accent"
-            >
-              <Menu className="h-3 w-3" />
-            </Button>
-          </div>
-          
-          <div className="space-y-2 pt-4 px-4">
-            <Button 
-              variant={activeTab === "dashboard" ? "enterprise" : "ghost"} 
-              className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}
-              onClick={() => setActiveTab("dashboard")}
-            >
-              <TrendingUp className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
-              {!sidebarCollapsed && "Dashboard"}
-            </Button>
-            <Button 
-              variant={activeTab === "schemes" ? "enterprise" : "ghost"} 
-              className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}
-              onClick={() => setActiveTab("schemes")}
-            >
-              <Zap className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
-              {!sidebarCollapsed && "Scheme Management"}
-            </Button>
-            <Button 
-              variant={activeTab === "users" ? "enterprise" : "ghost"} 
-              className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}
-              onClick={() => setActiveTab("users")}
-            >
-              <Users className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
-              {!sidebarCollapsed && "User Management"}
-            </Button>
-            <Button 
-              variant={activeTab === "rules" ? "enterprise" : "ghost"} 
-              className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}
-              onClick={() => setActiveTab("rules")}
-            >
-              <Target className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
-              {!sidebarCollapsed && "Rule Engine"}
-            </Button>
-            <Button 
-              variant={activeTab === "reporting" ? "enterprise" : "ghost"} 
-              className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}
-              onClick={() => setActiveTab("reporting")}
-            >
-              <Award className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
-              {!sidebarCollapsed && "Reporting"}
-            </Button>
-            <Button variant="ghost" className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}>
-              <Gift className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
-              {!sidebarCollapsed && "Rewards Catalog"}
-            </Button>
-            <Button variant="ghost" className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}>
-              <Bell className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
-              {!sidebarCollapsed && "Communications"}
-            </Button>
-            <Button variant="ghost" className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}>
-              <TrendingUp className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
-              {!sidebarCollapsed && "Analytics"}
-            </Button>
-           </div>
-        </nav>
+        <ResizablePanel 
+          defaultSize={sidebarCollapsed ? 6 : 20} 
+          minSize={6} 
+          maxSize={30}
+          className="border-r border-border bg-card/30 backdrop-blur-sm"
+        >
+          <nav className="h-full relative">
+            {/* Collapse Icon */}
+            <div className="absolute top-4 right-3 z-10">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                className="h-6 w-6 hover:bg-accent"
+              >
+                <Menu className="h-3 w-3" />
+              </Button>
+            </div>
+            
+            <div className="space-y-2 pt-4 px-4">
+              <Button 
+                variant={activeTab === "dashboard" ? "enterprise" : "ghost"} 
+                className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}
+                onClick={() => setActiveTab("dashboard")}
+              >
+                <TrendingUp className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
+                {!sidebarCollapsed && "Dashboard"}
+              </Button>
+              <Button 
+                variant={activeTab === "schemes" ? "enterprise" : "ghost"} 
+                className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}
+                onClick={() => setActiveTab("schemes")}
+              >
+                <Zap className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
+                {!sidebarCollapsed && "Scheme Management"}
+              </Button>
+              <Button 
+                variant={activeTab === "users" ? "enterprise" : "ghost"} 
+                className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}
+                onClick={() => setActiveTab("users")}
+              >
+                <Users className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
+                {!sidebarCollapsed && "User Management"}
+              </Button>
+              <Button 
+                variant={activeTab === "rules" ? "enterprise" : "ghost"} 
+                className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}
+                onClick={() => setActiveTab("rules")}
+              >
+                <Target className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
+                {!sidebarCollapsed && "Rule Engine"}
+              </Button>
+              <Button 
+                variant={activeTab === "reporting" ? "enterprise" : "ghost"} 
+                className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}
+                onClick={() => setActiveTab("reporting")}
+              >
+                <Award className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
+                {!sidebarCollapsed && "Reporting"}
+              </Button>
+              <Button variant="ghost" className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}>
+                <Gift className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
+                {!sidebarCollapsed && "Rewards Catalog"}
+              </Button>
+              <Button variant="ghost" className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}>
+                <Bell className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
+                {!sidebarCollapsed && "Communications"}
+              </Button>
+              <Button variant="ghost" className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}>
+                <TrendingUp className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
+                {!sidebarCollapsed && "Analytics"}
+              </Button>
+             </div>
+          </nav>
+        </ResizablePanel>
+        
+        <ResizableHandle withHandle />
 
         {/* Main Content */}
-        <main className="flex-1 p-6">
+        <ResizablePanel defaultSize={80} minSize={50}>
+          <main className="p-6 h-full overflow-auto">
           {activeTab === "dashboard" && (
             <div className="space-y-6">
           {/* KPI Cards */}
@@ -296,12 +307,13 @@ const Dashboard = () => {
           </Tabs>
         </div>
       )}
-          {activeTab === "schemes" && <SchemeManagement />}
-          {activeTab === "users" && <UserManagement />}
-          {activeTab === "rules" && <RuleEngine />}
-          {activeTab === "reporting" && <ReportingDashboard />}
-    </main>
-      </div>
+            {activeTab === "schemes" && <SchemeManagement />}
+            {activeTab === "users" && <UserManagement />}
+            {activeTab === "rules" && <RuleEngine />}
+            {activeTab === "reporting" && <ReportingDashboard />}
+          </main>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 };

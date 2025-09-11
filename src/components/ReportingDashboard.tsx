@@ -4,6 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { CalendarIcon, Filter, Users, Package, ChevronLeft, ChevronRight } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Legend, Tooltip } from 'recharts';
 import { cn } from "@/lib/utils";
@@ -65,9 +66,10 @@ const ReportingDashboard = () => {
   ];
 
   return (
-    <div className="flex h-full bg-background">
-      {/* Main Content */}
-      <div className={`flex-1 transition-all duration-300 ${filtersOpen ? 'mr-96' : 'mr-0'}`}>
+    <div className="h-full bg-background">
+      <ResizablePanelGroup direction="horizontal" className="h-full">
+        {/* Main Content */}
+        <ResizablePanel defaultSize={filtersOpen ? 70 : 100} minSize={50}>
         <div className="p-6 space-y-4">
           {/* Header */}
           <div className="flex items-center justify-between">
@@ -310,11 +312,15 @@ const ReportingDashboard = () => {
               </div>
             </CardContent>
           </Card>
-        </div>
-      </div>
-
-      {/* Filters Sidebar */}
-      <div className={`fixed top-0 right-0 h-full w-96 bg-card border-l border-border transform transition-transform duration-300 ${filtersOpen ? 'translate-x-0' : 'translate-x-full'} z-[60] overflow-auto`}>
+          </div>
+        </ResizablePanel>
+        
+        {filtersOpen && (
+          <>
+            <ResizableHandle withHandle />
+            
+            {/* Filters Sidebar */}
+            <ResizablePanel defaultSize={30} minSize={20} maxSize={40} className="bg-card border-l border-border overflow-auto">
         <div className="p-6 space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
@@ -558,7 +564,10 @@ const ReportingDashboard = () => {
             </Button>
           </div>
         </div>
-      </div>
+            </ResizablePanel>
+          </>
+        )}
+      </ResizablePanelGroup>
     </div>
   );
 };
