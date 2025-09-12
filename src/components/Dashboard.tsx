@@ -36,7 +36,7 @@ const Dashboard = () => {
       );
     } else {
       // Collapse sidebar to icon-only
-      const newWidth = 50;
+      const newWidth = 40;
       setSidebarWidth(newWidth);
       // Force panel resize
       const percentage = (newWidth / 1200) * 100;
@@ -49,7 +49,7 @@ const Dashboard = () => {
   // Determine text visibility and styling based on width
   const getTextDisplay = (text: string) => {
     if (sidebarWidth <= 30) return null; // Icons only
-    if (sidebarWidth >= 350) return text; // Full text
+    if (sidebarWidth >= 250) return text; // Full text
     
     // Text with fade for in-between widths
     const maxChars = Math.floor((sidebarWidth - 30) / 8); // Approximate chars per px
@@ -97,7 +97,7 @@ const Dashboard = () => {
               variant="ghost"
               size="icon"
               onClick={toggleSidebar}
-              className="h-6 w-6 hover:bg-accent ml-2 transition-transform duration-200 hover:scale-110"
+              className="h-6 w-6 hover:bg-accent ml-2 transition-transform duration-100 hover:scale-110"
             >
               {sidebarWidth <= 60 ? <PanelLeftOpen className="h-3 w-3" /> : <PanelLeftClose className="h-3 w-3" />}
             </Button>
