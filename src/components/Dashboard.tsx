@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,11 +10,58 @@ import SchemeManagement from "./SchemeManagement";
 import UserManagement from "./UserManagement";
 import RuleEngine from "./RuleEngine";
 import ReportingDashboard from "./ReportingDashboard";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarSize, setSidebarSize] = useState(20); // percentage of total width
+  
+  // Constants for sidebar behavior
+  const COLLAPSED_MIN_SIZE = 4; // ~48px at 1200px width
+  const COLLAPSED_MAX_SIZE = 6; // ~64px at 1200px width  
+  const EXPANDED_MIN_SIZE = 20; // ~240px at 1200px width
+  const EXPANDED_MAX_SIZE = 25; // ~300px at 1200px width
+  const COLLAPSE_THRESHOLD = 8; // threshold to auto-collapse
+  const EXPAND_THRESHOLD = 12; // threshold to auto-expand
+
+  // Handle layout changes from resizable panel
+  const handleLayoutChange = (sizes: number[]) => {
+    const newSidebarSize = sizes[0];
+    setSidebarSize(newSidebarSize);
+    
+    // Auto-collapse logic
+    if (!sidebarCollapsed && newSidebarSize < COLLAPSE_THRESHOLD) {
+      setSidebarCollapsed(true);
+      // Snap to collapsed size
+      setTimeout(() => setSidebarSize(COLLAPSED_MAX_SIZE), 0);
+    }
+    // Auto-expand logic  
+    else if (sidebarCollapsed && newSidebarSize > EXPAND_THRESHOLD) {
+      setSidebarCollapsed(false);
+      // Snap to expanded size
+      setTimeout(() => setSidebarSize(EXPANDED_MIN_SIZE), 0);
+    }
+  };
+
+  // Handle manual toggle
+  const toggleSidebar = () => {
+    if (sidebarCollapsed) {
+      setSidebarCollapsed(false);
+      setSidebarSize(EXPANDED_MIN_SIZE);
+    } else {
+      setSidebarCollapsed(true);
+      setSidebarSize(COLLAPSED_MAX_SIZE);
+    }
+  };
+
+  // Force panel group re-render when programmatically changing sizes
+  const [panelKey, setPanelKey] = useState(0);
+  
+  useEffect(() => {
+    // Force re-render when sidebar state changes programmatically
+    setPanelKey(prev => prev + 1);
+  }, [sidebarCollapsed]);
   // Mock data for analytics
   const monthlyData = [
     { month: 'Jan', points: 12000, users: 850, schemes: 5 },
@@ -64,13 +112,21 @@ const Dashboard = () => {
         </div>
       </header>
 
-      <ResizablePanelGroup direction="horizontal" className="min-h-[calc(100vh-4rem)]">
+      <ResizablePanelGroup 
+        key={panelKey}
+        direction="horizontal" 
+        className="min-h-[calc(100vh-4rem)]"
+        onLayout={handleLayoutChange}
+      >
         {/* Sidebar Navigation */}
         <ResizablePanel 
-          defaultSize={20}
-          minSize={6} 
-          maxSize={30}
-          className="border-r border-border bg-card/30 backdrop-blur-sm transition-all duration-300 ease-in-out"
+          defaultSize={sidebarCollapsed ? COLLAPSED_MAX_SIZE : EXPANDED_MIN_SIZE}
+          minSize={COLLAPSED_MIN_SIZE} 
+          maxSize={EXPANDED_MAX_SIZE}
+          className={cn(
+            "border-r border-border bg-card/30 backdrop-blur-sm transition-all duration-500 ease-in-out",
+            sidebarCollapsed && "transition-all duration-300 ease-out"
+          )}
         >
           <nav className="h-full relative">
             {/* Collapse Icon */}
@@ -78,7 +134,7 @@ const Dashboard = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                onClick={toggleSidebar}
                 className="h-6 w-6 hover:bg-accent"
               >
                 {sidebarCollapsed ? <PanelLeftOpen className="h-3 w-3" /> : <PanelLeftClose className="h-3 w-3" />}
