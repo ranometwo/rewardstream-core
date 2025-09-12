@@ -226,9 +226,8 @@ const SidebarRail = React.forwardRef<HTMLButtonElement, React.ComponentProps<"bu
         onClick={toggleSidebar}
         title="Toggle Sidebar"
         className={cn(
-          "absolute inset-y-0 z-20 hidden w-1 transition-all duration-200 ease-in-out",
+          "absolute inset-y-0 z-20 hidden w-1 -right-1 transition-all duration-200 ease-in-out",
           "hover:w-2 hover:bg-primary/10",
-          side === "left" ? "-right-1" : "-left-1",
           "sm:flex",
           className,
         )}
