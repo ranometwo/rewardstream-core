@@ -328,7 +328,7 @@ const ReportingDashboard = () => {
         
         {filtersOpen && (
           <>
-            <ResizableHandle withHandle />
+            <ResizableHandle />
             
             {/* Filters Sidebar */}
             <ResizablePanel 

@@ -259,7 +259,7 @@ const Dashboard = () => {
           </nav>
         </ResizablePanel>
         
-        <ResizableHandle withHandle />
+        <ResizableHandle />
 
         {/* Main Content */}
         <ResizablePanel defaultSize={80} minSize={50}>
