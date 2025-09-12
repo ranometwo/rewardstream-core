@@ -5,7 +5,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
-import { CalendarIcon, Filter, Users, Package, ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarIcon, Filter, Users, Package, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Legend, Tooltip } from 'recharts';
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -86,7 +86,7 @@ const ReportingDashboard = () => {
               >
                 <Filter className="w-4 h-4" />
                 Filters
-                {filtersOpen ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+                {filtersOpen ? <PanelLeftClose className="w-4 h-4" /> : <PanelLeftOpen className="w-4 h-4" />}
               </Button>
             </div>
           </div>
@@ -332,7 +332,7 @@ const ReportingDashboard = () => {
               size="sm"
               onClick={() => setFiltersOpen(false)}
             >
-              <ChevronRight className="w-4 h-4" />
+              <PanelLeftClose className="w-4 h-4" />
             </Button>
           </div>
 

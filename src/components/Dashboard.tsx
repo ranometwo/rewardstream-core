@@ -4,13 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
-import { Users, Trophy, Zap, TrendingUp, Settings, Bell, Award, Target, Gift, Star } from "lucide-react";
+import { Users, Trophy, Zap, TrendingUp, Settings, Bell, Award, Target, Gift, Star, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import SchemeManagement from "./SchemeManagement";
 import UserManagement from "./UserManagement";
 import RuleEngine from "./RuleEngine";
 import ReportingDashboard from "./ReportingDashboard";
 import { useState } from "react";
-import { Menu } from "lucide-react";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -68,10 +67,10 @@ const Dashboard = () => {
       <ResizablePanelGroup direction="horizontal" className="min-h-[calc(100vh-4rem)]">
         {/* Sidebar Navigation */}
         <ResizablePanel 
-          defaultSize={sidebarCollapsed ? 6 : 20} 
+          defaultSize={20}
           minSize={6} 
           maxSize={30}
-          className="border-r border-border bg-card/30 backdrop-blur-sm"
+          className="border-r border-border bg-card/30 backdrop-blur-sm transition-all duration-300 ease-in-out"
         >
           <nav className="h-full relative">
             {/* Collapse Icon */}
@@ -82,7 +81,7 @@ const Dashboard = () => {
                 onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
                 className="h-6 w-6 hover:bg-accent"
               >
-                <Menu className="h-3 w-3" />
+                {sidebarCollapsed ? <PanelLeftOpen className="h-3 w-3" /> : <PanelLeftClose className="h-3 w-3" />}
               </Button>
             </div>
             
