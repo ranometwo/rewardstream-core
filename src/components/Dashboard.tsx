@@ -1,375 +1,415 @@
-import { cn } from "@/lib/utils";
+import * as React from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
-import { Users, Trophy, Zap, TrendingUp, Settings, Bell, Award, Target, Gift, Star, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import {
+  SidebarProvider,
+  Sidebar,
+  SidebarHeader,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarSeparator,
+  SidebarTrigger,
+  SidebarInset,
+  SidebarRail,
+} from "@/components/ui/sidebar";
+
+import {
+  BarChart as RBarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
+
+import {
+  Users,
+  Trophy,
+  Zap,
+  TrendingUp,
+  Settings,
+  Bell,
+  Award,
+  Target,
+  Gift,
+  Star,
+} from "lucide-react";
+
 import SchemeManagement from "./SchemeManagement";
 import UserManagement from "./UserManagement";
 import RuleEngine from "./RuleEngine";
 import ReportingDashboard from "./ReportingDashboard";
-import { useState, useEffect } from "react";
 
-const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState("dashboard");
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [sidebarSize, setSidebarSize] = useState(20); // percentage of total width
-  
-  // Constants for sidebar behavior
-  const COLLAPSED_MIN_SIZE = 4; // ~48px at 1200px width
-  const COLLAPSED_MAX_SIZE = 6; // ~64px at 1200px width  
-  const EXPANDED_MIN_SIZE = 20; // ~240px at 1200px width
-  const EXPANDED_MAX_SIZE = 25; // ~300px at 1200px width
-  const COLLAPSE_THRESHOLD = 8; // threshold to auto-collapse
-  const EXPAND_THRESHOLD = 12; // threshold to auto-expand
+const Dashboard: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<"dashboard" | "schemes" | "users" | "rules" | "reporting">("dashboard");
 
-  // Handle layout changes from resizable panel
-  const handleLayoutChange = (sizes: number[]) => {
-    const newSidebarSize = sizes[0];
-    setSidebarSize(newSidebarSize);
-    
-    // Auto-collapse logic
-    if (!sidebarCollapsed && newSidebarSize < COLLAPSE_THRESHOLD) {
-      setSidebarCollapsed(true);
-      // Snap to collapsed size
-      setTimeout(() => setSidebarSize(COLLAPSED_MAX_SIZE), 0);
-    }
-    // Auto-expand logic  
-    else if (sidebarCollapsed && newSidebarSize > EXPAND_THRESHOLD) {
-      setSidebarCollapsed(false);
-      // Snap to expanded size
-      setTimeout(() => setSidebarSize(EXPANDED_MIN_SIZE), 0);
-    }
-  };
+  // Mock data (memoized)
+  const monthlyData = useMemo(
+    () => [
+      { month: "Jan", points: 12000, users: 850, schemes: 5 },
+      { month: "Feb", points: 15000, users: 920, schemes: 7 },
+      { month: "Mar", points: 18000, users: 1100, schemes: 9 },
+      { month: "Apr", points: 22000, users: 1250, schemes: 12 },
+      { month: "May", points: 28000, users: 1400, schemes: 15 },
+      { month: "Jun", points: 32000, users: 1650, schemes: 18 },
+    ],
+    []
+  );
 
-  // Handle manual toggle
-  const toggleSidebar = () => {
-    if (sidebarCollapsed) {
-      setSidebarCollapsed(false);
-      setSidebarSize(EXPANDED_MIN_SIZE);
-    } else {
-      setSidebarCollapsed(true);
-      setSidebarSize(COLLAPSED_MAX_SIZE);
-    }
-  };
+  const userTypeData = useMemo(
+    () => [
+      { name: "Painters", value: 45, color: "#8B5CF6" },
+      { name: "Contractors", value: 35, color: "#06B6D4" },
+      { name: "AIDs", value: 20, color: "#10B981" },
+    ],
+    []
+  );
 
-  // Force panel group re-render when programmatically changing sizes
-  const [panelKey, setPanelKey] = useState(0);
-  
-  useEffect(() => {
-    // Force re-render when sidebar state changes programmatically
-    setPanelKey(prev => prev + 1);
-  }, [sidebarCollapsed]);
-  // Mock data for analytics
-  const monthlyData = [
-    { month: 'Jan', points: 12000, users: 850, schemes: 5 },
-    { month: 'Feb', points: 15000, users: 920, schemes: 7 },
-    { month: 'Mar', points: 18000, users: 1100, schemes: 9 },
-    { month: 'Apr', points: 22000, users: 1250, schemes: 12 },
-    { month: 'May', points: 28000, users: 1400, schemes: 15 },
-    { month: 'Jun', points: 32000, users: 1650, schemes: 18 },
-  ];
-
-  const userTypeData = [
-    { name: 'Painters', value: 45, color: '#8B5CF6' },
-    { name: 'Contractors', value: 35, color: '#06B6D4' },
-    { name: 'AIDs', value: 20, color: '#10B981' },
-  ];
-
-  const topSchemes = [
-    { name: 'New User Bonus', participants: 1200, points: 24000, status: 'Active' },
-    { name: 'Referral Program', participants: 850, points: 17000, status: 'Active' },
-    { name: 'Monthly Challenge', participants: 650, points: 13000, status: 'Active' },
-    { name: 'Lucky Draw Q2', participants: 2100, points: 0, status: 'Completed' },
-  ];
+  const topSchemes = useMemo(
+    () => [
+      { name: "New User Bonus", participants: 1200, points: 24000, status: "Active" },
+      { name: "Referral Program", participants: 850, points: 17000, status: "Active" },
+      { name: "Monthly Challenge", participants: 650, points: 13000, status: "Active" },
+      { name: "Lucky Draw Q2", participants: 2100, points: 0, status: "Completed" },
+    ],
+    []
+  );
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="flex h-16 items-center justify-between px-6">
-          <div className="flex items-center gap-4">
+    <SidebarProvider>
+      {/* Skip link for a11y */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-foreground"
+      >
+        Skip to content
+      </a>
+
+      {/* App Header */}
+      <header className="sticky top-0 z-40 border-b border-border bg-card/60 backdrop-blur-sm">
+        <div className="flex h-14 items-center justify-between px-3 md:px-6">
+          <div className="flex items-center gap-2">
+            <SidebarTrigger />
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-lg bg-gradient-primary flex items-center justify-center">
                 <Trophy className="h-4 w-4 text-primary-foreground" />
               </div>
-              <h1 className="text-xl font-bold text-foreground">Loyalty Engine</h1>
+              <h1 className="text-lg md:text-xl font-bold text-foreground">
+                Loyalty Engine
+              </h1>
             </div>
-            <Badge variant="secondary" className="bg-accent text-accent-foreground">
+            <Badge variant="secondary" className="ml-2 bg-accent text-accent-foreground">
               Enterprise Portal
             </Badge>
           </div>
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon">
+          <div className="flex items-center gap-1 md:gap-2">
+            <Button variant="ghost" size="icon" aria-label="Notifications">
               <Bell className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" aria-label="Settings">
               <Settings className="h-4 w-4" />
             </Button>
           </div>
         </div>
       </header>
 
-      <ResizablePanelGroup 
-        key={panelKey}
-        direction="horizontal" 
-        className="min-h-[calc(100vh-4rem)]"
-        onLayout={handleLayoutChange}
-      >
-        {/* Sidebar Navigation */}
-        <ResizablePanel 
-          defaultSize={sidebarCollapsed ? COLLAPSED_MAX_SIZE : EXPANDED_MIN_SIZE}
-          minSize={COLLAPSED_MIN_SIZE} 
-          maxSize={EXPANDED_MAX_SIZE}
-          className={cn(
-            "border-r border-border bg-card/30 backdrop-blur-sm transition-all duration-500 ease-in-out",
-            sidebarCollapsed && "transition-all duration-300 ease-out"
-          )}
-        >
-          <nav className="h-full relative">
-            {/* Collapse Icon */}
-            <div className="absolute top-4 right-3 z-10">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleSidebar}
-                className="h-6 w-6 hover:bg-accent"
-              >
-                {sidebarCollapsed ? <PanelLeftOpen className="h-3 w-3" /> : <PanelLeftClose className="h-3 w-3" />}
-              </Button>
-            </div>
-            
-            <div className="space-y-2 pt-4 px-4">
-              <Button 
-                variant={activeTab === "dashboard" ? "enterprise" : "ghost"} 
-                className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}
-                onClick={() => setActiveTab("dashboard")}
-              >
-                <TrendingUp className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
-                {!sidebarCollapsed && "Dashboard"}
-              </Button>
-              <Button 
-                variant={activeTab === "schemes" ? "enterprise" : "ghost"} 
-                className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}
-                onClick={() => setActiveTab("schemes")}
-              >
-                <Zap className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
-                {!sidebarCollapsed && "Scheme Management"}
-              </Button>
-              <Button 
-                variant={activeTab === "users" ? "enterprise" : "ghost"} 
-                className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}
-                onClick={() => setActiveTab("users")}
-              >
-                <Users className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
-                {!sidebarCollapsed && "User Management"}
-              </Button>
-              <Button 
-                variant={activeTab === "rules" ? "enterprise" : "ghost"} 
-                className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}
-                onClick={() => setActiveTab("rules")}
-              >
-                <Target className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
-                {!sidebarCollapsed && "Rule Engine"}
-              </Button>
-              <Button 
-                variant={activeTab === "reporting" ? "enterprise" : "ghost"} 
-                className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}
-                onClick={() => setActiveTab("reporting")}
-              >
-                <Award className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
-                {!sidebarCollapsed && "Reporting"}
-              </Button>
-              <Button variant="ghost" className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}>
-                <Gift className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
-                {!sidebarCollapsed && "Rewards Catalog"}
-              </Button>
-              <Button variant="ghost" className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}>
-                <Bell className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
-                {!sidebarCollapsed && "Communications"}
-              </Button>
-              <Button variant="ghost" className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}>
-                <TrendingUp className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
-                {!sidebarCollapsed && "Analytics"}
-              </Button>
-             </div>
-          </nav>
-        </ResizablePanel>
-        
-        <ResizableHandle withHandle />
+      {/* Layout: Sidebar + Inset Content */}
+      <div className="flex w-full" data-variant="inset">
+        <Sidebar variant="sidebar" collapsible="icon" side="left" className="bg-card/30 backdrop-blur-sm">
+          <SidebarHeader>
+            <SidebarGroupLabel className="text-xs uppercase tracking-wide">
+              Navigation
+            </SidebarGroupLabel>
+          </SidebarHeader>
 
-        {/* Main Content */}
-        <ResizablePanel defaultSize={80} minSize={50}>
-          <main className="p-6 h-full overflow-auto">
+          <SidebarContent id="primary-sidebar">
+            <SidebarGroup>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    isActive={activeTab === "dashboard"}
+                    onClick={() => setActiveTab("dashboard")}
+                    tooltip="Dashboard"
+                  >
+                    <TrendingUp className="shrink-0" />
+                    <span>Dashboard</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    isActive={activeTab === "schemes"}
+                    onClick={() => setActiveTab("schemes")}
+                    tooltip="Scheme Management"
+                  >
+                    <Zap className="shrink-0" />
+                    <span>Scheme Management</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    isActive={activeTab === "users"}
+                    onClick={() => setActiveTab("users")}
+                    tooltip="User Management"
+                  >
+                    <Users className="shrink-0" />
+                    <span>User Management</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    isActive={activeTab === "rules"}
+                    onClick={() => setActiveTab("rules")}
+                    tooltip="Rule Engine"
+                  >
+                    <Target className="shrink-0" />
+                    <span>Rule Engine</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    isActive={activeTab === "reporting"}
+                    onClick={() => setActiveTab("reporting")}
+                    tooltip="Reporting"
+                  >
+                    <Award className="shrink-0" />
+                    <span>Reporting</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+
+                <SidebarSeparator />
+
+                <SidebarMenuItem>
+                  <SidebarMenuButton tooltip="Rewards Catalog">
+                    <Gift className="shrink-0" />
+                    <span>Rewards Catalog</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+
+                <SidebarMenuItem>
+                  <SidebarMenuButton tooltip="Communications">
+                    <Bell className="shrink-0" />
+                    <span>Communications</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+
+                <SidebarMenuItem>
+                  <SidebarMenuButton tooltip="Analytics">
+                    <TrendingUp className="shrink-0" />
+                    <span>Analytics</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroup>
+          </SidebarContent>
+
+          <SidebarFooter>
+            <p className="px-2 text-xs text-muted-foreground">
+              ⌘/Ctrl + B to toggle
+            </p>
+          </SidebarFooter>
+
+          <SidebarRail />
+        </Sidebar>
+
+        <SidebarInset className="p-4 md:p-6">
           {activeTab === "dashboard" && (
             <div className="space-y-6">
-          {/* KPI Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="border-border shadow-enterprise bg-gradient-secondary">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Active Users</CardTitle>
-                <Users className="h-4 w-4 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-foreground">1,650</div>
-                <p className="text-xs text-success">+12% from last month</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-border shadow-enterprise bg-gradient-secondary">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Points Distributed</CardTitle>
-                <Star className="h-4 w-4 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-foreground">32K</div>
-                <p className="text-xs text-success">+8% from last month</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-border shadow-enterprise bg-gradient-secondary">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Active Schemes</CardTitle>
-                <Zap className="h-4 w-4 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-foreground">18</div>
-                <p className="text-xs text-success">+3 new schemes</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-border shadow-enterprise bg-gradient-secondary">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Engagement Rate</CardTitle>
-                <TrendingUp className="h-4 w-4 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-foreground">84%</div>
-                <p className="text-xs text-success">+5% from last month</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Analytics Tabs */}
-          <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="schemes">Schemes</TabsTrigger>
-              <TabsTrigger value="users">Users</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="overview" className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Monthly Trends */}
-                <Card className="border-border shadow-enterprise">
-                  <CardHeader>
-                    <CardTitle className="text-foreground">Monthly Trends</CardTitle>
+              {/* KPI Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                <Card className="border-border shadow-enterprise bg-gradient-secondary">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      Active Users
+                    </CardTitle>
+                    <Users className="h-4 w-4 text-primary" />
                   </CardHeader>
                   <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <LineChart data={monthlyData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                        <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
-                        <YAxis stroke="hsl(var(--muted-foreground))" />
-                        <Line type="monotone" dataKey="points" stroke="hsl(var(--primary))" strokeWidth={2} />
-                        <Line type="monotone" dataKey="users" stroke="hsl(var(--success))" strokeWidth={2} />
-                      </LineChart>
-                    </ResponsiveContainer>
+                    <div className="text-2xl font-bold text-foreground">1,650</div>
+                    <p className="text-xs text-success">+12% from last month</p>
                   </CardContent>
                 </Card>
 
-                {/* User Distribution */}
-                <Card className="border-border shadow-enterprise">
-                  <CardHeader>
-                    <CardTitle className="text-foreground">User Distribution</CardTitle>
+                <Card className="border-border shadow-enterprise bg-gradient-secondary">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      Points Distributed
+                    </CardTitle>
+                    <Star className="h-4 w-4 text-primary" />
                   </CardHeader>
                   <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <PieChart>
-                        <Pie
-                          data={userTypeData}
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="value"
-                          label={({ name, value }) => `${name}: ${value}%`}
-                        >
-                          {userTypeData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                      </PieChart>
-                    </ResponsiveContainer>
+                    <div className="text-2xl font-bold text-foreground">32K</div>
+                    <p className="text-xs text-success">+8% from last month</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-border shadow-enterprise bg-gradient-secondary">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      Active Schemes
+                    </CardTitle>
+                    <Zap className="h-4 w-4 text-primary" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-foreground">18</div>
+                    <p className="text-xs text-success">+3 new schemes</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-border shadow-enterprise bg-gradient-secondary">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      Engagement Rate
+                    </CardTitle>
+                    <TrendingUp className="h-4 w-4 text-primary" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-foreground">84%</div>
+                    <p className="text-xs text-success">+5% from last month</p>
                   </CardContent>
                 </Card>
               </div>
-            </TabsContent>
 
-            <TabsContent value="schemes" className="space-y-6">
-              {/* Top Performing Schemes */}
-              <Card className="border-border shadow-enterprise">
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="text-foreground">Top Performing Schemes</CardTitle>
-                  <Button className="bg-gradient-primary text-primary-foreground shadow-glass">
-                    Create New Scheme
-                  </Button>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {topSchemes.map((scheme, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 border border-border rounded-lg bg-gradient-secondary">
-                        <div className="space-y-1">
-                          <h3 className="font-medium text-foreground">{scheme.name}</h3>
-                          <div className="flex gap-4 text-sm text-muted-foreground">
-                            <span>{scheme.participants} participants</span>
-                            <span>{scheme.points} points distributed</span>
-                          </div>
-                        </div>
-                        <Badge 
-                          variant={scheme.status === 'Active' ? 'default' : 'secondary'}
-                          className={scheme.status === 'Active' ? 'bg-gradient-success text-success-foreground' : ''}
-                        >
-                          {scheme.status}
-                        </Badge>
-                      </div>
-                    ))}
+              {/* Analytics Tabs */}
+              <Tabs defaultValue="overview" className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="overview">Overview</TabsTrigger>
+                  <TabsTrigger value="schemes">Schemes</TabsTrigger>
+                  <TabsTrigger value="users">Users</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="overview" className="space-y-6 pt-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Monthly Trends */}
+                    <Card className="border-border shadow-enterprise">
+                      <CardHeader>
+                        <CardTitle className="text-foreground">Monthly Trends</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <ResponsiveContainer width="100%" height={300}>
+                          <LineChart data={monthlyData}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                            <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
+                            <YAxis stroke="hsl(var(--muted-foreground))" />
+                            <Line type="monotone" dataKey="points" stroke="hsl(var(--primary))" strokeWidth={2} />
+                            <Line type="monotone" dataKey="users" stroke="hsl(var(--success))" strokeWidth={2} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </CardContent>
+                    </Card>
+
+                    {/* User Distribution */}
+                    <Card className="border-border shadow-enterprise">
+                      <CardHeader>
+                        <CardTitle className="text-foreground">User Distribution</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <ResponsiveContainer width="100%" height={300}>
+                          <PieChart>
+                            <Pie
+                              data={userTypeData}
+                              cx="50%"
+                              cy="50%"
+                              outerRadius={80}
+                              dataKey="value"
+                              label={({ name, value }) => `${name}: ${value}%`}
+                            >
+                              {userTypeData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                              ))}
+                            </Pie>
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </CardContent>
+                    </Card>
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                </TabsContent>
 
-            <TabsContent value="users" className="space-y-6">
-              {/* User Activity */}
-              <Card className="border-border shadow-enterprise">
-                <CardHeader>
-                  <CardTitle className="text-foreground">User Activity Trends</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={monthlyData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
-                      <YAxis stroke="hsl(var(--muted-foreground))" />
-                      <Bar dataKey="users" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
-      )}
-            {activeTab === "schemes" && <SchemeManagement />}
-            {activeTab === "users" && <UserManagement />}
-            {activeTab === "rules" && <RuleEngine />}
-            {activeTab === "reporting" && <ReportingDashboard />}
-          </main>
-        </ResizablePanel>
-      </ResizablePanelGroup>
-    </div>
+                <TabsContent value="schemes" className="space-y-6 pt-4">
+                  {/* Top Performing Schemes */}
+                  <Card className="border-border shadow-enterprise">
+                    <CardHeader className="flex flex-row items-center justify-between">
+                      <CardTitle className="text-foreground">Top Performing Schemes</CardTitle>
+                      <Button className="bg-gradient-primary text-primary-foreground shadow-glass">
+                        Create New Scheme
+                      </Button>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {topSchemes.map((scheme, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between p-4 border border-border rounded-lg bg-gradient-secondary"
+                          >
+                            <div className="space-y-1">
+                              <h3 className="font-medium text-foreground">{scheme.name}</h3>
+                              <div className="flex gap-4 text-sm text-muted-foreground">
+                                <span>{scheme.participants} participants</span>
+                                <span>{scheme.points} points distributed</span>
+                              </div>
+                            </div>
+                            <Badge
+                              variant={scheme.status === "Active" ? "default" : "secondary"}
+                              className={
+                                scheme.status === "Active"
+                                  ? "bg-gradient-success text-success-foreground"
+                                  : ""
+                              }
+                            >
+                              {scheme.status}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="users" className="space-y-6 pt-4">
+                  {/* User Activity */}
+                  <Card className="border-border shadow-enterprise">
+                    <CardHeader>
+                      <CardTitle className="text-foreground">User Activity Trends</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <RBarChart data={monthlyData}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                          <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
+                          <YAxis stroke="hsl(var(--muted-foreground))" />
+                          <Bar dataKey="users" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                        </RBarChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+            </div>
+          )}
+
+          {activeTab === "schemes" && <SchemeManagement />}
+          {activeTab === "users" && <UserManagement />}
+          {activeTab === "rules" && <RuleEngine />}
+          {activeTab === "reporting" && <ReportingDashboard />}
+        </SidebarInset>
+      </div>
+    </SidebarProvider>
   );
 };
 
