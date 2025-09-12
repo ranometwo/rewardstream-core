@@ -14,54 +14,47 @@ import { useState, useEffect } from "react";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [sidebarSize, setSidebarSize] = useState(20); // percentage of total width
+  const [sidebarWidth, setSidebarWidth] = useState(250); // pixel width
   
-  // Constants for sidebar behavior
-  const COLLAPSED_MIN_SIZE = 4; // ~48px at 1200px width
-  const COLLAPSED_MAX_SIZE = 6; // ~64px at 1200px width  
-  const EXPANDED_MIN_SIZE = 20; // ~240px at 1200px width
-  const EXPANDED_MAX_SIZE = 25; // ~300px at 1200px width
-  const COLLAPSE_THRESHOLD = 8; // threshold to auto-collapse
-  const EXPAND_THRESHOLD = 12; // threshold to auto-expand
-
   // Handle layout changes from resizable panel
   const handleLayoutChange = (sizes: number[]) => {
-    const newSidebarSize = sizes[0];
-    setSidebarSize(newSidebarSize);
+    // Convert percentage to approximate pixel width (assuming ~1200px total width)
+    const approximatePixelWidth = (sizes[0] / 100) * 1200;
+    setSidebarWidth(approximatePixelWidth);
+  };
+
+  // Determine text visibility and styling based on width
+  const getTextDisplay = (text: string) => {
+    if (sidebarWidth <= 30) return null; // Icons only
+    if (sidebarWidth >= 350) return text; // Full text
     
-    // Auto-collapse logic
-    if (!sidebarCollapsed && newSidebarSize < COLLAPSE_THRESHOLD) {
-      setSidebarCollapsed(true);
-      // Snap to collapsed size
-      setTimeout(() => setSidebarSize(COLLAPSED_MAX_SIZE), 0);
-    }
-    // Auto-expand logic  
-    else if (sidebarCollapsed && newSidebarSize > EXPAND_THRESHOLD) {
-      setSidebarCollapsed(false);
-      // Snap to expanded size
-      setTimeout(() => setSidebarSize(EXPANDED_MIN_SIZE), 0);
-    }
+    // Text with fade for in-between widths
+    const maxChars = Math.floor((sidebarWidth - 30) / 8); // Approximate chars per px
+    if (text.length <= maxChars) return text;
+    return text.substring(0, maxChars) + "...";
   };
 
-  // Handle manual toggle
-  const toggleSidebar = () => {
-    if (sidebarCollapsed) {
-      setSidebarCollapsed(false);
-      setSidebarSize(EXPANDED_MIN_SIZE);
-    } else {
-      setSidebarCollapsed(true);
-      setSidebarSize(COLLAPSED_MAX_SIZE);
-    }
+  const getTextStyle = () => {
+    if (sidebarWidth <= 30) return { display: 'none' };
+    if (sidebarWidth >= 350) return {};
+    
+    // Fade effect for trimmed text
+    return {
+      position: 'relative' as const,
+      overflow: 'hidden',
+      '&::after': {
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        width: '20px',
+        height: '100%',
+        background: 'linear-gradient(to right, transparent, hsl(var(--card)))'
+      }
+    };
   };
 
-  // Force panel group re-render when programmatically changing sizes
-  const [panelKey, setPanelKey] = useState(0);
-  
-  useEffect(() => {
-    // Force re-render when sidebar state changes programmatically
-    setPanelKey(prev => prev + 1);
-  }, [sidebarCollapsed]);
+  const shouldShowText = sidebarWidth > 30;
   // Mock data for analytics
   const monthlyData = [
     { month: 'Jan', points: 12000, users: 850, schemes: 5 },
@@ -97,9 +90,13 @@ const Dashboard = () => {
               </div>
               <h1 className="text-xl font-bold text-foreground">Loyalty Engine</h1>
             </div>
-            <Badge variant="secondary" className="bg-accent text-accent-foreground">
-              Enterprise Portal
-            </Badge>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 hover:bg-accent ml-2"
+            >
+              {sidebarWidth <= 60 ? <PanelLeftOpen className="h-3 w-3" /> : <PanelLeftClose className="h-3 w-3" />}
+            </Button>
           </div>
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon">
@@ -113,86 +110,150 @@ const Dashboard = () => {
       </header>
 
       <ResizablePanelGroup 
-        key={panelKey}
         direction="horizontal" 
         className="min-h-[calc(100vh-4rem)]"
         onLayout={handleLayoutChange}
       >
         {/* Sidebar Navigation */}
         <ResizablePanel 
-          defaultSize={sidebarCollapsed ? COLLAPSED_MAX_SIZE : EXPANDED_MIN_SIZE}
-          minSize={COLLAPSED_MIN_SIZE} 
-          maxSize={EXPANDED_MAX_SIZE}
-          className={cn(
-            "border-r border-border bg-card/30 backdrop-blur-sm transition-all duration-500 ease-in-out",
-            sidebarCollapsed && "transition-all duration-300 ease-out"
-          )}
+          defaultSize={20}
+          minSize={2.5} // ~30px at 1200px width
+          maxSize={40}
+          className="border-r border-border bg-card/30 backdrop-blur-sm transition-all duration-200 ease-out"
         >
-          <nav className="h-full relative">
-            {/* Collapse Icon */}
-            <div className="absolute top-4 right-3 z-10">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleSidebar}
-                className="h-6 w-6 hover:bg-accent"
-              >
-                {sidebarCollapsed ? <PanelLeftOpen className="h-3 w-3" /> : <PanelLeftClose className="h-3 w-3" />}
-              </Button>
-            </div>
-            
-            <div className="space-y-2 pt-4 px-4">
+          <nav className="h-full">
+            <div className="space-y-2 pt-4 px-2">
               <Button 
                 variant={activeTab === "dashboard" ? "enterprise" : "ghost"} 
-                className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}
+                className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'} transition-all duration-200`}
                 onClick={() => setActiveTab("dashboard")}
               >
-                <TrendingUp className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
-                {!sidebarCollapsed && "Dashboard"}
+                <TrendingUp className={`h-4 w-4 ${shouldShowText ? 'mr-2' : ''}`} />
+                {shouldShowText && (
+                  <span 
+                    className="truncate relative overflow-hidden"
+                    style={sidebarWidth < 350 ? { 
+                      maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
+                      WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+                    } : {}}
+                  >
+                    {getTextDisplay("Dashboard")}
+                  </span>
+                )}
               </Button>
               <Button 
                 variant={activeTab === "schemes" ? "enterprise" : "ghost"} 
-                className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}
+                className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'} transition-all duration-200`}
                 onClick={() => setActiveTab("schemes")}
               >
-                <Zap className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
-                {!sidebarCollapsed && "Scheme Management"}
+                <Zap className={`h-4 w-4 ${shouldShowText ? 'mr-2' : ''}`} />
+                {shouldShowText && (
+                  <span 
+                    className="truncate relative overflow-hidden"
+                    style={sidebarWidth < 350 ? { 
+                      maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
+                      WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+                    } : {}}
+                  >
+                    {getTextDisplay("Scheme Management")}
+                  </span>
+                )}
               </Button>
               <Button 
                 variant={activeTab === "users" ? "enterprise" : "ghost"} 
-                className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}
+                className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'} transition-all duration-200`}
                 onClick={() => setActiveTab("users")}
               >
-                <Users className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
-                {!sidebarCollapsed && "User Management"}
+                <Users className={`h-4 w-4 ${shouldShowText ? 'mr-2' : ''}`} />
+                {shouldShowText && (
+                  <span 
+                    className="truncate relative overflow-hidden"
+                    style={sidebarWidth < 350 ? { 
+                      maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
+                      WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+                    } : {}}
+                  >
+                    {getTextDisplay("User Management")}
+                  </span>
+                )}
               </Button>
               <Button 
                 variant={activeTab === "rules" ? "enterprise" : "ghost"} 
-                className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}
+                className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'} transition-all duration-200`}
                 onClick={() => setActiveTab("rules")}
               >
-                <Target className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
-                {!sidebarCollapsed && "Rule Engine"}
+                <Target className={`h-4 w-4 ${shouldShowText ? 'mr-2' : ''}`} />
+                {shouldShowText && (
+                  <span 
+                    className="truncate relative overflow-hidden"
+                    style={sidebarWidth < 350 ? { 
+                      maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
+                      WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+                    } : {}}
+                  >
+                    {getTextDisplay("Rule Engine")}
+                  </span>
+                )}
               </Button>
               <Button 
                 variant={activeTab === "reporting" ? "enterprise" : "ghost"} 
-                className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}
+                className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'} transition-all duration-200`}
                 onClick={() => setActiveTab("reporting")}
               >
-                <Award className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
-                {!sidebarCollapsed && "Reporting"}
+                <Award className={`h-4 w-4 ${shouldShowText ? 'mr-2' : ''}`} />
+                {shouldShowText && (
+                  <span 
+                    className="truncate relative overflow-hidden"
+                    style={sidebarWidth < 350 ? { 
+                      maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
+                      WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+                    } : {}}
+                  >
+                    {getTextDisplay("Reporting")}
+                  </span>
+                )}
               </Button>
-              <Button variant="ghost" className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}>
-                <Gift className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
-                {!sidebarCollapsed && "Rewards Catalog"}
+              <Button variant="ghost" className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'} transition-all duration-200`}>
+                <Gift className={`h-4 w-4 ${shouldShowText ? 'mr-2' : ''}`} />
+                {shouldShowText && (
+                  <span 
+                    className="truncate relative overflow-hidden"
+                    style={sidebarWidth < 350 ? { 
+                      maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
+                      WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+                    } : {}}
+                  >
+                    {getTextDisplay("Rewards Catalog")}
+                  </span>
+                )}
               </Button>
-              <Button variant="ghost" className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}>
-                <Bell className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
-                {!sidebarCollapsed && "Communications"}
+              <Button variant="ghost" className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'} transition-all duration-200`}>
+                <Bell className={`h-4 w-4 ${shouldShowText ? 'mr-2' : ''}`} />
+                {shouldShowText && (
+                  <span 
+                    className="truncate relative overflow-hidden"
+                    style={sidebarWidth < 350 ? { 
+                      maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
+                      WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+                    } : {}}
+                  >
+                    {getTextDisplay("Communications")}
+                  </span>
+                )}
               </Button>
-              <Button variant="ghost" className={`w-full ${sidebarCollapsed ? 'px-2 justify-center' : 'justify-start'}`}>
-                <TrendingUp className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} />
-                {!sidebarCollapsed && "Analytics"}
+              <Button variant="ghost" className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'} transition-all duration-200`}>
+                <TrendingUp className={`h-4 w-4 ${shouldShowText ? 'mr-2' : ''}`} />
+                {shouldShowText && (
+                  <span 
+                    className="truncate relative overflow-hidden"
+                    style={sidebarWidth < 350 ? { 
+                      maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
+                      WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+                    } : {}}
+                  >
+                    {getTextDisplay("Analytics")}
+                  </span>
+                )}
               </Button>
              </div>
           </nav>

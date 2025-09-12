@@ -15,44 +15,11 @@ const ReportingDashboard = () => {
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [filterSize, setFilterSize] = useState(30); // percentage of total width
-  
-  // Constants for filter panel behavior
-  const COLLAPSED_MIN_SIZE = 4; // ~48px at 1200px width
-  const COLLAPSED_MAX_SIZE = 6; // ~64px at 1200px width  
-  const EXPANDED_MIN_SIZE = 25; // ~300px at 1200px width
-  const EXPANDED_MAX_SIZE = 35; // ~420px at 1200px width
-  const COLLAPSE_THRESHOLD = 10; // threshold to auto-collapse
-  const EXPAND_THRESHOLD = 15; // threshold to auto-expand
-
-  // Handle layout changes from resizable panel
-  const handleLayoutChange = (sizes: number[]) => {
-    if (sizes.length > 1) {
-      const newFilterSize = sizes[1]; // Filter panel is second
-      setFilterSize(newFilterSize);
-      
-      // Auto-collapse logic
-      if (filtersOpen && newFilterSize < COLLAPSE_THRESHOLD) {
-        setFiltersOpen(false);
-      }
-      // Auto-expand logic  
-      else if (!filtersOpen && newFilterSize > EXPAND_THRESHOLD) {
-        setFiltersOpen(true);
-      }
-    }
-  };
 
   // Handle manual toggle
   const toggleFilters = () => {
     setFiltersOpen(!filtersOpen);
   };
-
-  // Force panel group re-render when programmatically changing sizes
-  const [panelKey, setPanelKey] = useState(0);
-  
-  useEffect(() => {
-    setPanelKey(prev => prev + 1);
-  }, [filtersOpen]);
   
   // Mock data for the dashboard
   const campaignImpact = {
@@ -106,10 +73,8 @@ const ReportingDashboard = () => {
   return (
     <div className="h-full bg-background">
       <ResizablePanelGroup 
-        key={panelKey}
         direction="horizontal" 
         className="h-full"
-        onLayout={handleLayoutChange}
       >
         {/* Main Content */}
         <ResizablePanel 
@@ -367,10 +332,10 @@ const ReportingDashboard = () => {
             
             {/* Filters Sidebar */}
             <ResizablePanel 
-              defaultSize={filtersOpen ? EXPANDED_MIN_SIZE : COLLAPSED_MAX_SIZE} 
-              minSize={COLLAPSED_MIN_SIZE} 
-              maxSize={EXPANDED_MAX_SIZE} 
-              className="bg-card border-l border-border overflow-auto transition-all duration-500 ease-in-out"
+              defaultSize={25} 
+              minSize={20} 
+              maxSize={40} 
+              className="bg-card border-l border-border overflow-auto transition-all duration-200 ease-out"
             >
         <div className="p-6 space-y-6">
           <div className="flex items-center justify-between">
