@@ -23,6 +23,29 @@ const Dashboard = () => {
     setSidebarWidth(approximatePixelWidth);
   };
 
+  // Toggle function for header button
+  const toggleSidebar = () => {
+    if (sidebarWidth <= 60) {
+      // Open sidebar to default width
+      const newWidth = 250;
+      setSidebarWidth(newWidth);
+      // Force panel resize by updating the panel size
+      const percentage = (newWidth / 1200) * 100; // Convert to percentage
+      document.querySelector('[data-panel-id]')?.dispatchEvent(
+        new CustomEvent('resize', { detail: { size: percentage } })
+      );
+    } else {
+      // Collapse sidebar to icon-only
+      const newWidth = 50;
+      setSidebarWidth(newWidth);
+      // Force panel resize
+      const percentage = (newWidth / 1200) * 100;
+      document.querySelector('[data-panel-id]')?.dispatchEvent(
+        new CustomEvent('resize', { detail: { size: percentage } })
+      );
+    }
+  };
+
   // Determine text visibility and styling based on width
   const getTextDisplay = (text: string) => {
     if (sidebarWidth <= 30) return null; // Icons only
@@ -32,26 +55,6 @@ const Dashboard = () => {
     const maxChars = Math.floor((sidebarWidth - 30) / 8); // Approximate chars per px
     if (text.length <= maxChars) return text;
     return text.substring(0, maxChars) + "...";
-  };
-
-  const getTextStyle = () => {
-    if (sidebarWidth <= 30) return { display: 'none' };
-    if (sidebarWidth >= 350) return {};
-    
-    // Fade effect for trimmed text
-    return {
-      position: 'relative' as const,
-      overflow: 'hidden',
-      '&::after': {
-        content: '""',
-        position: 'absolute',
-        top: 0,
-        right: 0,
-        width: '20px',
-        height: '100%',
-        background: 'linear-gradient(to right, transparent, hsl(var(--card)))'
-      }
-    };
   };
 
   const shouldShowText = sidebarWidth > 30;
@@ -93,7 +96,8 @@ const Dashboard = () => {
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6 hover:bg-accent ml-2"
+              onClick={toggleSidebar}
+              className="h-6 w-6 hover:bg-accent ml-2 transition-transform duration-200 hover:scale-110"
             >
               {sidebarWidth <= 60 ? <PanelLeftOpen className="h-3 w-3" /> : <PanelLeftClose className="h-3 w-3" />}
             </Button>
@@ -119,13 +123,13 @@ const Dashboard = () => {
           defaultSize={20}
           minSize={2.5} // ~30px at 1200px width
           maxSize={40}
-          className="border-r border-border bg-card/30 backdrop-blur-sm transition-all duration-200 ease-out"
+          className="border-r border-border bg-card/30 backdrop-blur-sm"
         >
           <nav className="h-full">
             <div className="space-y-2 pt-4 px-2">
               <Button 
                 variant={activeTab === "dashboard" ? "enterprise" : "ghost"} 
-                className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'} transition-all duration-200`}
+                className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'}`}
                 onClick={() => setActiveTab("dashboard")}
               >
                 <TrendingUp className={`h-4 w-4 ${shouldShowText ? 'mr-2' : ''}`} />
@@ -143,7 +147,7 @@ const Dashboard = () => {
               </Button>
               <Button 
                 variant={activeTab === "schemes" ? "enterprise" : "ghost"} 
-                className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'} transition-all duration-200`}
+                className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'}`}
                 onClick={() => setActiveTab("schemes")}
               >
                 <Zap className={`h-4 w-4 ${shouldShowText ? 'mr-2' : ''}`} />
@@ -161,7 +165,7 @@ const Dashboard = () => {
               </Button>
               <Button 
                 variant={activeTab === "users" ? "enterprise" : "ghost"} 
-                className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'} transition-all duration-200`}
+                className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'}`}
                 onClick={() => setActiveTab("users")}
               >
                 <Users className={`h-4 w-4 ${shouldShowText ? 'mr-2' : ''}`} />
@@ -179,7 +183,7 @@ const Dashboard = () => {
               </Button>
               <Button 
                 variant={activeTab === "rules" ? "enterprise" : "ghost"} 
-                className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'} transition-all duration-200`}
+                className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'}`}
                 onClick={() => setActiveTab("rules")}
               >
                 <Target className={`h-4 w-4 ${shouldShowText ? 'mr-2' : ''}`} />
@@ -197,7 +201,7 @@ const Dashboard = () => {
               </Button>
               <Button 
                 variant={activeTab === "reporting" ? "enterprise" : "ghost"} 
-                className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'} transition-all duration-200`}
+                className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'}`}
                 onClick={() => setActiveTab("reporting")}
               >
                 <Award className={`h-4 w-4 ${shouldShowText ? 'mr-2' : ''}`} />
@@ -213,7 +217,7 @@ const Dashboard = () => {
                   </span>
                 )}
               </Button>
-              <Button variant="ghost" className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'} transition-all duration-200`}>
+              <Button variant="ghost" className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'}`}>
                 <Gift className={`h-4 w-4 ${shouldShowText ? 'mr-2' : ''}`} />
                 {shouldShowText && (
                   <span 
@@ -227,7 +231,7 @@ const Dashboard = () => {
                   </span>
                 )}
               </Button>
-              <Button variant="ghost" className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'} transition-all duration-200`}>
+              <Button variant="ghost" className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'}`}>
                 <Bell className={`h-4 w-4 ${shouldShowText ? 'mr-2' : ''}`} />
                 {shouldShowText && (
                   <span 
@@ -241,7 +245,7 @@ const Dashboard = () => {
                   </span>
                 )}
               </Button>
-              <Button variant="ghost" className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'} transition-all duration-200`}>
+              <Button variant="ghost" className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'}`}>
                 <TrendingUp className={`h-4 w-4 ${shouldShowText ? 'mr-2' : ''}`} />
                 {shouldShowText && (
                   <span 
