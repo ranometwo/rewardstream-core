@@ -1,9 +1,7 @@
-
 const RuleEngine = () => {
-    retun(
-      <div></div>
-    );
+    return (
+    <div></div>
+  );
 };
 
 export default RuleEngine;
-
