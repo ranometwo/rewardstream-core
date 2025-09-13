@@ -22,81 +22,56 @@ interface TextVisibility {
 }
 
 const BREAKPOINTS = {
-  ICON_ONLY: 40,
-  NARROW_TEXT: 180,
-  COMFORTABLE: 200,
-  MOBILE: 768,
-  TABLET: 1024,
+  ICON_ONLY: 30,
+  NARROW_TEXT: 100,
+  COMFORTABLE: 150,
 } as const;
 
 const SIDEBAR_CONFIG = {
-  COLLAPSED_WIDTH: 40,
-  EXPANDED_WIDTH: 180,
+  COLLAPSED_WIDTH: 30,
+  EXPANDED_WIDTH: 150,
   CONTAINER_PADDING: 24,
-  DEFAULT_SIZE: 23,
-  MIN_SIZE: 4,
-  MAX_SIZE: 40,
+  DEFAULT_SIZE: 15,
+  MIN_SIZE: 3,
+  MAX_SIZE: 25,
 } as const;
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState(280);
+  const [sidebarWidth, setSidebarWidth] = useState<number>(SIDEBAR_CONFIG.EXPANDED_WIDTH);
   const panelGroupRef = useRef<any>(null);
   const location = useLocation();
+
+  // Derive collapsed state from width
+  const sidebarCollapsed = useMemo(() => sidebarWidth <= 60, [sidebarWidth]);
 
   const handleLayoutChange = useCallback((sizes: number[]) => {
     const containerWidth = window.innerWidth - SIDEBAR_CONFIG.CONTAINER_PADDING;
     const actualPixelWidth = (sizes[0] / 100) * containerWidth;
-
     setSidebarWidth(actualPixelWidth);
-
-    const shouldBeCollapsed = actualPixelWidth <= BREAKPOINTS.ICON_ONLY;
-
-    if (shouldBeCollapsed !== sidebarCollapsed) {
-      setSidebarCollapsed(shouldBeCollapsed);
-
-      if (shouldBeCollapsed && panelGroupRef.current) {
-        requestAnimationFrame(() => {
-          setTimeout(() => {
-            const collapsedPercentage = (SIDEBAR_CONFIG.COLLAPSED_WIDTH / containerWidth) * 100;
-            panelGroupRef.current?.setLayout([collapsedPercentage, 100 - collapsedPercentage]);
-          }, 16);
-        });
-      }
-    }
-  }, [sidebarCollapsed]);
+  }, []);
 
   const toggleSidebar = useCallback(() => {
     const containerWidth = window.innerWidth - SIDEBAR_CONFIG.CONTAINER_PADDING;
-
-    if (sidebarCollapsed) {
-      const targetPercentage = Math.min((SIDEBAR_CONFIG.EXPANDED_WIDTH / containerWidth) * 100, 35);
-      setSidebarWidth(SIDEBAR_CONFIG.EXPANDED_WIDTH);
-      setSidebarCollapsed(false);
-
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          panelGroupRef.current?.setLayout?.([targetPercentage, 100 - targetPercentage]);
-        }, 20);
-      });
+    
+    if (sidebarWidth <= 60) {
+      // Currently collapsed, expand to 150px
+      const targetPercentage = (SIDEBAR_CONFIG.EXPANDED_WIDTH / containerWidth) * 100;
+      panelGroupRef.current?.setLayout([targetPercentage, 100 - targetPercentage]);
     } else {
+      // Currently expanded, collapse to 30px
       const collapsedPercentage = (SIDEBAR_CONFIG.COLLAPSED_WIDTH / containerWidth) * 100;
-      setSidebarWidth(SIDEBAR_CONFIG.COLLAPSED_WIDTH);
-      setSidebarCollapsed(true);
-
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          panelGroupRef.current?.setLayout?.([collapsedPercentage, 100 - collapsedPercentage]);
-        }, 20);
-      });
+      panelGroupRef.current?.setLayout([collapsedPercentage, 100 - collapsedPercentage]);
     }
-  }, [sidebarCollapsed]);
+  }, [sidebarWidth]);
 
   const textVisibility = useMemo((): TextVisibility => {
-    if (sidebarWidth < BREAKPOINTS.ICON_ONLY) {
+    if (sidebarWidth <= BREAKPOINTS.ICON_ONLY) {
       return { showText: false, fadeText: false, iconSpacing: 'justify-center', iconMargin: '' };
     }
     if (sidebarWidth < BREAKPOINTS.NARROW_TEXT) {
+      return { showText: false, fadeText: false, iconSpacing: 'justify-center', iconMargin: '' };
+    }
+    if (sidebarWidth < BREAKPOINTS.COMFORTABLE) {
       return { showText: true, fadeText: true, iconSpacing: 'justify-start', iconMargin: 'mr-2' };
     }
     return { showText: true, fadeText: false, iconSpacing: 'justify-start', iconMargin: 'mr-2' };
@@ -186,7 +161,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           defaultSize={SIDEBAR_CONFIG.DEFAULT_SIZE}
           minSize={SIDEBAR_CONFIG.MIN_SIZE}
           maxSize={SIDEBAR_CONFIG.MAX_SIZE}
-          className="border-r border-border bg-card/30 backdrop-blur-sm"
+          className="border-r border-border bg-card/30 backdrop-blur-sm transition-all duration-300 ease-out"
         >
           <nav className="h-full">
             <div className="space-y-2 pt-4 px-2">
@@ -201,9 +176,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </nav>
         </ResizablePanel>
 
-        <ResizableHandle className="w-1 bg-border hover:bg-border/80 transition-colors duration-200" />
+        <ResizableHandle className="w-1 bg-border hover:bg-border/80 transition-all duration-200 hover:w-1.5" />
 
-        <ResizablePanel defaultSize={77} minSize={50}>
+        <ResizablePanel defaultSize={85} minSize={50}>
           <main className="p-6 h-full overflow-auto">
             {children}
           </main>
