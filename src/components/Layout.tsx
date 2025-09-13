@@ -100,7 +100,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       icon: Database, 
       path: "/analytics",
       children: [
-        { id: "analytics-overview", label: "Overview", icon: TrendingUp, path: "/analytics" },
         { id: "analytics-schemes", label: "Scheme Reports", icon: BarChart3, path: "/analytics/schemes" },
         { id: "analytics-users", label: "User Reports", icon: Users, path: "/analytics/users" },
         { id: "analytics-advanced", label: "Advanced", icon: Target, path: "/analytics/advanced" },
@@ -125,8 +124,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const isItemActive = useCallback((item: NavigationItem): boolean => {
     if (item.children) {
-      // For parent items, check if any child is active
-      return item.children.some(child => location.pathname === child.path);
+      // For parent items with children, active if on exact path or any child is active
+      return location.pathname === item.path || item.children.some(child => location.pathname === child.path);
     }
     return location.pathname === item.path;
   }, [location.pathname]);
@@ -140,9 +139,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const hasChildren = item.children && item.children.length > 0;
     const isExpanded = hasChildren && expandedSections[item.id];
 
-    const handleClick = (e: React.MouseEvent) => {
-      if (hasChildren && onToggle) {
-        e.preventDefault();
+    const handleToggleClick = (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (onToggle) {
         onToggle();
       }
     };
@@ -156,7 +156,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           isChild && "ml-4 text-sm",
           hasChildren && "justify-between"
         )}
-        onClick={handleClick}
       >
         <div className={cn("flex items-center", iconSpacing === 'justify-center' ? 'justify-center' : '')}>
           <item.icon className={`h-4 w-4 flex-shrink-0 ${iconMargin}`} />
@@ -176,20 +175,20 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           )}
         </div>
         {hasChildren && showText && (
-          <div className="flex-shrink-0 ml-2">
+          <button
+            onClick={handleToggleClick}
+            className="flex-shrink-0 ml-2 p-1 rounded hover:bg-accent/50 transition-colors"
+            aria-label={isExpanded ? "Collapse section" : "Expand section"}
+          >
             {isExpanded ? (
               <ChevronDown className="h-3 w-3 transition-transform duration-200" />
             ) : (
               <ChevronRight className="h-3 w-3 transition-transform duration-200" />
             )}
-          </div>
+          </button>
         )}
       </Button>
     );
-
-    if (hasChildren) {
-      return buttonContent;
-    }
 
     return (
       <Link to={item.path}>
