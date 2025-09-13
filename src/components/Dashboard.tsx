@@ -10,39 +10,36 @@ import SchemeManagement from "./SchemeManagement";
 import UserManagement from "./UserManagement";
 import RuleEngine from "./RuleEngine";
 import ReportingDashboard from "./ReportingDashboard";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [sidebarWidth, setSidebarWidth] = useState(250); // pixel width
-  
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(240); // Default to 20% of 1200px
+  const panelGroupRef = useRef<any>(null);
+
   // Handle layout changes from resizable panel
   const handleLayoutChange = (sizes: number[]) => {
     // Convert percentage to approximate pixel width (assuming ~1200px total width)
     const approximatePixelWidth = (sizes[0] / 100) * 1200;
     setSidebarWidth(approximatePixelWidth);
+
+    // Update collapsed state based on width
+    setSidebarCollapsed(approximatePixelWidth <= 60);
   };
 
   // Toggle function for header button
   const toggleSidebar = () => {
-    if (sidebarWidth <= 60) {
-      // Open sidebar to default width
-      const newWidth = 250;
-      setSidebarWidth(newWidth);
-      // Force panel resize by updating the panel size
-      const percentage = (newWidth / 1200) * 100; // Convert to percentage
-      document.querySelector('[data-panel-id]')?.dispatchEvent(
-        new CustomEvent('resize', { detail: { size: percentage } })
-      );
+    if (!panelGroupRef.current) return;
+
+    if (sidebarCollapsed) {
+      // Expand sidebar to 20% (default width)
+      panelGroupRef.current.setLayout([20, 80]);
+      setSidebarCollapsed(false);
     } else {
-      // Collapse sidebar to icon-only
-      const newWidth = 40;
-      setSidebarWidth(newWidth);
-      // Force panel resize
-      const percentage = (newWidth / 1200) * 100;
-      document.querySelector('[data-panel-id]')?.dispatchEvent(
-        new CustomEvent('resize', { detail: { size: percentage } })
-      );
+      // Collapse sidebar to minimum (2.5% ≈ 30px at 1200px width)
+      panelGroupRef.current.setLayout([2.5, 97.5]);
+      setSidebarCollapsed(true);
     }
   };
 
@@ -52,7 +49,7 @@ const Dashboard = () => {
     if (sidebarWidth >= 250) return text; // Full text
     
     // Text with fade for in-between widths
-    const maxChars = Math.floor((sidebarWidth - 30) / 8); // Approximate chars per px
+    const maxChars = Math.floor((sidebarWidth - 30) / 1); // Approximate chars per px
     if (text.length <= maxChars) return text;
     return text.substring(0, maxChars) + "...";
   };
@@ -99,7 +96,7 @@ const Dashboard = () => {
               onClick={toggleSidebar}
               className="h-6 w-6 hover:bg-accent ml-2 transition-transform duration-100 hover:scale-110"
             >
-              {sidebarWidth <= 60 ? <PanelLeftOpen className="h-3 w-3" /> : <PanelLeftClose className="h-3 w-3" />}
+              {sidebarCollapsed ? <PanelLeftOpen className="h-3 w-3" /> : <PanelLeftClose className="h-3 w-3" />}
             </Button>
           </div>
           <div className="flex items-center gap-3">
@@ -113,10 +110,11 @@ const Dashboard = () => {
         </div>
       </header>
 
-      <ResizablePanelGroup 
-        direction="horizontal" 
+      <ResizablePanelGroup
+        direction="horizontal"
         className="min-h-[calc(100vh-4rem)]"
         onLayout={handleLayoutChange}
+        ref={panelGroupRef}
       >
         {/* Sidebar Navigation */}
         <ResizablePanel 
