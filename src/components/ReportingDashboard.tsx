@@ -9,77 +9,78 @@ import { CalendarIcon, Filter, Users, Package, PanelLeftClose, PanelLeftOpen } f
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Legend, Tooltip } from 'recharts';
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 
 const ReportingDashboard = () => {
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  // Handle manual toggle
-  const toggleFilters = () => {
-    setFiltersOpen(!filtersOpen);
-  };
+  // Smooth toggle with useCallback to prevent unnecessary re-renders
+  const toggleFilters = useCallback(() => {
+    setFiltersOpen(prev => !prev);
+  }, []);
   
-  // Mock data for the dashboard
-  const campaignImpact = {
+  // Memoized mock data to prevent unnecessary re-renders
+  const campaignImpact = useMemo(() => ({
     targetUsers: 150,
     usersUplifted: 50,
     upliftPercentage: 33.3,
     avgVolUplift: { before: 2.0, after: 2.1, percentage: 5 },
     totalVolUplift: 50
-  };
+  }), []);
 
-  const slabWiseData = [
+  const slabWiseData = useMemo(() => [
     { slab: 'Slab A (0-50)', targetUsers: 100, usersUplifted: 20, upliftPercent: 5, avgVolUplift: 0.1, totalVolUplift: 30 },
     { slab: 'Slab B (50-100)', targetUsers: 30, usersUplifted: 15, upliftPercent: 10, avgVolUplift: 0.2, totalVolUplift: 15 },
     { slab: 'Slab C (>100)', targetUsers: 20, usersUplifted: 15, upliftPercent: 18, avgVolUplift: 0.3, totalVolUplift: 5 }
-  ];
+  ], []);
 
-  const productMixBefore = [
+  const productMixBefore = useMemo(() => [
     { name: 'Ever Wash', value: 25, color: '#8B5CF6' },
     { name: 'Calista Premium', value: 20, color: '#06B6D4' },
     { name: 'One Coat', value: 18, color: '#10B981' },
     { name: 'Tech Primer', value: 15, color: '#F59E0B' },
     { name: 'Interior Plus', value: 12, color: '#EF4444' },
     { name: 'Others', value: 10, color: '#6B7280' }
-  ];
+  ], []);
 
-  const productMixAfter = [
+  const productMixAfter = useMemo(() => [
     { name: 'Ever Wash', value: 30, color: '#8B5CF6' },
     { name: 'Calista Premium', value: 22, color: '#06B6D4' },
     { name: 'One Coat', value: 20, color: '#10B981' },
     { name: 'Tech Primer', value: 13, color: '#F59E0B' },
     { name: 'Interior Plus', value: 10, color: '#EF4444' },
     { name: 'Others', value: 5, color: '#6B7280' }
-  ];
+  ], []);
 
-  const slabProgressionData = [
+  const slabProgressionData = useMemo(() => [
     { day: 'Pre-Campaign', slabA: 90, slabB: 50, slabC: 120, newUsers: 0 },
     { day: 'Day 1', slabA: 90, slabB: 60, slabC: 135, newUsers: 10 },
     { day: 'Day 2', slabA: 80, slabB: 65, slabC: 140, newUsers: 20 },
     { day: 'Day 3', slabA: 85, slabB: 70, slabC: 150, newUsers: 30 },
     { day: 'Post-Campaign', slabA: 95, slabB: 75, slabC: 165, newUsers: 50 }
-  ];
+  ], []);
 
-  const volumeProgressionData = [
+  const volumeProgressionData = useMemo(() => [
     { day: 'Pre-Campaign', slabA: 180, slabB: 150, slabC: 200, newUsers: 0 },
     { day: 'Day 1', slabA: 200, slabB: 180, slabC: 250, newUsers: 20 },
     { day: 'Day 2', slabA: 190, slabB: 185, slabC: 260, newUsers: 40 },
     { day: 'Day 3', slabA: 210, slabB: 190, slabC: 280, newUsers: 50 },
     { day: 'Post-Campaign', slabA: 230, slabB: 225, slabC: 320, newUsers: 70 }
-  ];
+  ], []);
 
   return (
     <div className="h-full bg-background">
-      <ResizablePanelGroup 
-        direction="horizontal" 
+      <ResizablePanelGroup
+        direction="horizontal"
         className="h-full"
       >
         {/* Main Content */}
-        <ResizablePanel 
-          defaultSize={filtersOpen ? 65 : 100} 
+        <ResizablePanel
+          defaultSize={75}
           minSize={50}
+          className="transition-all duration-300 ease-out"
         >
         <div className="p-6 space-y-4">
           {/* Header */}
@@ -192,24 +193,28 @@ const ReportingDashboard = () => {
                 <CardTitle className="text-foreground text-lg">Product Mix - Before</CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
-                <ResponsiveContainer width="100%" height={250}>
-                  <PieChart>
-                    <Pie
-                      data={productMixBefore}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={100}
-                      dataKey="value"
-                    >
-                      {productMixBefore.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
+                <div className="w-full h-[250px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={productMixBefore}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={100}
+                        dataKey="value"
+                        animationBegin={0}
+                        animationDuration={300}
+                      >
+                        {productMixBefore.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
               </CardContent>
             </Card>
 
@@ -218,24 +223,28 @@ const ReportingDashboard = () => {
                 <CardTitle className="text-foreground text-lg">Product Mix - After</CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
-                <ResponsiveContainer width="100%" height={250}>
-                  <PieChart>
-                    <Pie
-                      data={productMixAfter}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={100}
-                      dataKey="value"
-                    >
-                      {productMixAfter.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
+                <div className="w-full h-[250px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={productMixAfter}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={100}
+                        dataKey="value"
+                        animationBegin={0}
+                        animationDuration={300}
+                      >
+                        {productMixAfter.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -247,19 +256,21 @@ const ReportingDashboard = () => {
                 <CardTitle className="text-foreground text-lg">Slab Change - User Uplift Progression</CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={slabProgressionData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" />
-                    <YAxis stroke="hsl(var(--muted-foreground))" />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="slabA" stackId="a" fill="#8B5CF6" name="Slab A" />
-                    <Bar dataKey="slabB" stackId="a" fill="#06B6D4" name="Slab B" />
-                    <Bar dataKey="slabC" stackId="a" fill="#10B981" name="Slab C" />
-                    <Bar dataKey="newUsers" stackId="b" fill="#F59E0B" name="New Users" />
-                  </BarChart>
-                </ResponsiveContainer>
+                <div className="w-full h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={slabProgressionData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" />
+                      <YAxis stroke="hsl(var(--muted-foreground))" />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="slabA" stackId="a" fill="#8B5CF6" name="Slab A" animationDuration={300} />
+                      <Bar dataKey="slabB" stackId="a" fill="#06B6D4" name="Slab B" animationDuration={300} />
+                      <Bar dataKey="slabC" stackId="a" fill="#10B981" name="Slab C" animationDuration={300} />
+                      <Bar dataKey="newUsers" stackId="b" fill="#F59E0B" name="New Users" animationDuration={300} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </CardContent>
             </Card>
 
@@ -268,19 +279,21 @@ const ReportingDashboard = () => {
                 <CardTitle className="text-foreground text-lg">Slab Change - Volume Uplift Progression</CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={volumeProgressionData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" />
-                    <YAxis stroke="hsl(var(--muted-foreground))" />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="slabA" stackId="a" fill="#8B5CF6" name="Slab A" />
-                    <Bar dataKey="slabB" stackId="a" fill="#06B6D4" name="Slab B" />
-                    <Bar dataKey="slabC" stackId="a" fill="#10B981" name="Slab C" />
-                    <Bar dataKey="newUsers" stackId="b" fill="#F59E0B" name="New Users" />
-                  </BarChart>
-                </ResponsiveContainer>
+                <div className="w-full h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={volumeProgressionData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" />
+                      <YAxis stroke="hsl(var(--muted-foreground))" />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="slabA" stackId="a" fill="#8B5CF6" name="Slab A" animationDuration={300} />
+                      <Bar dataKey="slabB" stackId="a" fill="#06B6D4" name="Slab B" animationDuration={300} />
+                      <Bar dataKey="slabC" stackId="a" fill="#10B981" name="Slab C" animationDuration={300} />
+                      <Bar dataKey="newUsers" stackId="b" fill="#F59E0B" name="New Users" animationDuration={300} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -331,11 +344,11 @@ const ReportingDashboard = () => {
             <ResizableHandle />
             
             {/* Filters Sidebar */}
-            <ResizablePanel 
-              defaultSize={25} 
-              minSize={20} 
-              maxSize={40} 
-              className="bg-card border-l border-border overflow-auto transition-all duration-200 ease-out"
+            <ResizablePanel
+              defaultSize={25}
+              minSize={20}
+              maxSize={40}
+              className="bg-card border-l border-border overflow-auto transition-all duration-300 ease-out"
             >
         <div className="p-6 space-y-6">
           <div className="flex items-center justify-between">

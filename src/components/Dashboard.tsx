@@ -10,51 +10,93 @@ import SchemeManagement from "./SchemeManagement";
 import UserManagement from "./UserManagement";
 import RuleEngine from "./RuleEngine";
 import ReportingDashboard from "./ReportingDashboard";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState(240); // Default to 20% of 1200px
+  const [sidebarWidth, setSidebarWidth] = useState(280);
   const panelGroupRef = useRef<any>(null);
 
-  // Handle layout changes from resizable panel
-  const handleLayoutChange = (sizes: number[]) => {
-    // Convert percentage to approximate pixel width (assuming ~1200px total width)
-    const approximatePixelWidth = (sizes[0] / 100) * 1200;
-    setSidebarWidth(approximatePixelWidth);
-
-    // Update collapsed state based on width
-    setSidebarCollapsed(approximatePixelWidth <= 60);
+  // Responsive breakpoints for optimal UX
+  const BREAKPOINTS = {
+    ICON_ONLY: 60,           // Below 60px = icon-only mode
+    NARROW_TEXT: 180,        // 60-180px = narrow with fade
+    COMFORTABLE: 200,        // 200px+ = comfortable reading
+    MOBILE: 768,             // Mobile breakpoint
+    TABLET: 1024,            // Tablet breakpoint
   };
 
-  // Toggle function for header button
-  const toggleSidebar = () => {
-    if (!panelGroupRef.current) return;
+  // Constants for consistent behavior
+  const COLLAPSED_WIDTH = 48;
+  const EXPANDED_WIDTH = 280;
+  const CONTAINER_PADDING = 24;
+
+  // Smooth layout change handler with auto-snap
+  const handleLayoutChange = useCallback((sizes: number[]) => {
+    const containerWidth = window.innerWidth - CONTAINER_PADDING;
+    const actualPixelWidth = (sizes[0] / 100) * containerWidth;
+
+    setSidebarWidth(actualPixelWidth);
+
+    const shouldBeCollapsed = actualPixelWidth <= BREAKPOINTS.ICON_ONLY;
+
+    if (shouldBeCollapsed !== sidebarCollapsed) {
+      setSidebarCollapsed(shouldBeCollapsed);
+
+      if (shouldBeCollapsed && panelGroupRef.current) {
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            const collapsedPercentage = (COLLAPSED_WIDTH / containerWidth) * 100;
+            panelGroupRef.current?.setLayout([collapsedPercentage, 100 - collapsedPercentage]);
+          }, 16);
+        });
+      }
+    }
+  }, [sidebarCollapsed]);
+
+  // Smooth toggle function with consistent timing
+  const toggleSidebar = useCallback(() => {
+    const containerWidth = window.innerWidth - CONTAINER_PADDING;
 
     if (sidebarCollapsed) {
-      // Expand sidebar to 20% (default width)
-      panelGroupRef.current.setLayout([20, 80]);
+      const targetPercentage = Math.min((EXPANDED_WIDTH / containerWidth) * 100, 35);
+
+      setSidebarWidth(EXPANDED_WIDTH);
       setSidebarCollapsed(false);
+
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          panelGroupRef.current?.setLayout?.([targetPercentage, 100 - targetPercentage]);
+        }, 20);
+      });
     } else {
-      // Collapse sidebar to minimum (2.5% ≈ 30px at 1200px width)
-      panelGroupRef.current.setLayout([2.5, 97.5]);
+      const collapsedPercentage = (COLLAPSED_WIDTH / containerWidth) * 100;
+
+      setSidebarWidth(COLLAPSED_WIDTH);
       setSidebarCollapsed(true);
+
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          panelGroupRef.current?.setLayout?.([collapsedPercentage, 100 - collapsedPercentage]);
+        }, 20);
+      });
     }
+  }, [sidebarCollapsed]);
+
+  // Smart text display logic
+  const getTextVisibility = () => {
+    if (sidebarWidth < BREAKPOINTS.ICON_ONLY) {
+      return { showText: false, fadeText: false, iconSpacing: 'justify-center', iconMargin: '' };
+    }
+    if (sidebarWidth < BREAKPOINTS.NARROW_TEXT) {
+      return { showText: true, fadeText: true, iconSpacing: 'justify-start', iconMargin: 'mr-2' };
+    }
+    return { showText: true, fadeText: false, iconSpacing: 'justify-start', iconMargin: 'mr-2' };
   };
 
-  // Determine text visibility and styling based on width
-  const getTextDisplay = (text: string) => {
-    if (sidebarWidth <= 30) return null; // Icons only
-    if (sidebarWidth >= 250) return text; // Full text
-    
-    // Text with fade for in-between widths
-    const maxChars = Math.floor((sidebarWidth - 30) / 1); // Approximate chars per px
-    if (text.length <= maxChars) return text;
-    return text.substring(0, maxChars) + "...";
-  };
+  const { showText, fadeText, iconSpacing, iconMargin } = getTextVisibility();
 
-  const shouldShowText = sidebarWidth > 30;
   // Mock data for analytics
   const monthlyData = [
     { month: 'Jan', points: 12000, users: 850, schemes: 5 },
@@ -94,7 +136,8 @@ const Dashboard = () => {
               variant="ghost"
               size="icon"
               onClick={toggleSidebar}
-              className="h-6 w-6 hover:bg-accent ml-2 transition-transform duration-100 hover:scale-110"
+              className="h-6 w-6 hover:bg-accent ml-2 transition-all duration-200 hover:scale-110"
+              aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
               {sidebarCollapsed ? <PanelLeftOpen className="h-3 w-3" /> : <PanelLeftClose className="h-3 w-3" />}
             </Button>
@@ -117,314 +160,351 @@ const Dashboard = () => {
         ref={panelGroupRef}
       >
         {/* Sidebar Navigation */}
-        <ResizablePanel 
-          defaultSize={20}
-          minSize={2.5} // ~30px at 1200px width
+        <ResizablePanel
+          defaultSize={23}
+          minSize={4}
           maxSize={40}
           className="border-r border-border bg-card/30 backdrop-blur-sm"
         >
           <nav className="h-full">
             <div className="space-y-2 pt-4 px-2">
-              <Button 
-                variant={activeTab === "dashboard" ? "enterprise" : "ghost"} 
-                className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'}`}
+              {/* Dashboard */}
+              <Button
+                variant={activeTab === "dashboard" ? "enterprise" : "ghost"}
+                className={`w-full transition-all duration-200 ${iconSpacing}`}
                 onClick={() => setActiveTab("dashboard")}
               >
-                <TrendingUp className={`h-4 w-4 ${shouldShowText ? 'mr-2' : ''}`} />
-                {shouldShowText && (
-                  <span 
-                    className="truncate relative overflow-hidden"
-                    style={sidebarWidth < 350 ? { 
-                      maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
-                      WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+                <TrendingUp className={`h-4 w-4 flex-shrink-0 ${iconMargin}`} />
+                {showText && (
+                  <span
+                    className={cn(
+                      "truncate transition-opacity duration-200",
+                      fadeText && "opacity-70"
+                    )}
+                    style={fadeText ? {
+                      maskImage: 'linear-gradient(to right, black 80%, transparent 100%)',
+                      WebkitMaskImage: 'linear-gradient(to right, black 80%, transparent 100%)'
                     } : {}}
                   >
-                    {getTextDisplay("Dashboard")}
+                    Dashboard
                   </span>
                 )}
               </Button>
-              <Button 
-                variant={activeTab === "schemes" ? "enterprise" : "ghost"} 
-                className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'}`}
+
+              {/* Scheme Management */}
+              <Button
+                variant={activeTab === "schemes" ? "enterprise" : "ghost"}
+                className={`w-full transition-all duration-200 ${iconSpacing}`}
                 onClick={() => setActiveTab("schemes")}
               >
-                <Zap className={`h-4 w-4 ${shouldShowText ? 'mr-2' : ''}`} />
-                {shouldShowText && (
-                  <span 
-                    className="truncate relative overflow-hidden"
-                    style={sidebarWidth < 350 ? { 
-                      maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
-                      WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+                <Zap className={`h-4 w-4 flex-shrink-0 ${iconMargin}`} />
+                {showText && (
+                  <span
+                    className={cn(
+                      "truncate transition-opacity duration-200",
+                      fadeText && "opacity-70"
+                    )}
+                    style={fadeText ? {
+                      maskImage: 'linear-gradient(to right, black 80%, transparent 100%)',
+                      WebkitMaskImage: 'linear-gradient(to right, black 80%, transparent 100%)'
                     } : {}}
                   >
-                    {getTextDisplay("Scheme Management")}
+                    Schemes
                   </span>
                 )}
               </Button>
-              <Button 
-                variant={activeTab === "users" ? "enterprise" : "ghost"} 
-                className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'}`}
+
+              {/* User Management */}
+              <Button
+                variant={activeTab === "users" ? "enterprise" : "ghost"}
+                className={`w-full transition-all duration-200 ${iconSpacing}`}
                 onClick={() => setActiveTab("users")}
               >
-                <Users className={`h-4 w-4 ${shouldShowText ? 'mr-2' : ''}`} />
-                {shouldShowText && (
-                  <span 
-                    className="truncate relative overflow-hidden"
-                    style={sidebarWidth < 350 ? { 
-                      maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
-                      WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+                <Users className={`h-4 w-4 flex-shrink-0 ${iconMargin}`} />
+                {showText && (
+                  <span
+                    className={cn(
+                      "truncate transition-opacity duration-200",
+                      fadeText && "opacity-70"
+                    )}
+                    style={fadeText ? {
+                      maskImage: 'linear-gradient(to right, black 80%, transparent 100%)',
+                      WebkitMaskImage: 'linear-gradient(to right, black 80%, transparent 100%)'
                     } : {}}
                   >
-                    {getTextDisplay("User Management")}
+                    Users
                   </span>
                 )}
               </Button>
-              <Button 
-                variant={activeTab === "rules" ? "enterprise" : "ghost"} 
-                className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'}`}
+
+              {/* Rule Engine */}
+              <Button
+                variant={activeTab === "rules" ? "enterprise" : "ghost"}
+                className={`w-full transition-all duration-200 ${iconSpacing}`}
                 onClick={() => setActiveTab("rules")}
               >
-                <Target className={`h-4 w-4 ${shouldShowText ? 'mr-2' : ''}`} />
-                {shouldShowText && (
-                  <span 
-                    className="truncate relative overflow-hidden"
-                    style={sidebarWidth < 350 ? { 
-                      maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
-                      WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+                <Target className={`h-4 w-4 flex-shrink-0 ${iconMargin}`} />
+                {showText && (
+                  <span
+                    className={cn(
+                      "truncate transition-opacity duration-200",
+                      fadeText && "opacity-70"
+                    )}
+                    style={fadeText ? {
+                      maskImage: 'linear-gradient(to right, black 80%, transparent 100%)',
+                      WebkitMaskImage: 'linear-gradient(to right, black 80%, transparent 100%)'
                     } : {}}
                   >
-                    {getTextDisplay("Rule Engine")}
+                    Rules
                   </span>
                 )}
               </Button>
-              <Button 
-                variant={activeTab === "reporting" ? "enterprise" : "ghost"} 
-                className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'}`}
+
+              {/* Reporting */}
+              <Button
+                variant={activeTab === "reporting" ? "enterprise" : "ghost"}
+                className={`w-full transition-all duration-200 ${iconSpacing}`}
                 onClick={() => setActiveTab("reporting")}
               >
-                <Award className={`h-4 w-4 ${shouldShowText ? 'mr-2' : ''}`} />
-                {shouldShowText && (
-                  <span 
-                    className="truncate relative overflow-hidden"
-                    style={sidebarWidth < 350 ? { 
-                      maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
-                      WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+                <Award className={`h-4 w-4 flex-shrink-0 ${iconMargin}`} />
+                {showText && (
+                  <span
+                    className={cn(
+                      "truncate transition-opacity duration-200",
+                      fadeText && "opacity-70"
+                    )}
+                    style={fadeText ? {
+                      maskImage: 'linear-gradient(to right, black 80%, transparent 100%)',
+                      WebkitMaskImage: 'linear-gradient(to right, black 80%, transparent 100%)'
                     } : {}}
                   >
-                    {getTextDisplay("Reporting")}
+                    Reports
                   </span>
                 )}
               </Button>
-              <Button variant="ghost" className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'}`}>
-                <Gift className={`h-4 w-4 ${shouldShowText ? 'mr-2' : ''}`} />
-                {shouldShowText && (
-                  <span 
-                    className="truncate relative overflow-hidden"
-                    style={sidebarWidth < 350 ? { 
-                      maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
-                      WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+
+              {/* Other Options */}
+              <Button variant="ghost" className={`w-full transition-all duration-200 ${iconSpacing}`}>
+                <Gift className={`h-4 w-4 flex-shrink-0 ${iconMargin}`} />
+                {showText && (
+                  <span
+                    className={cn(
+                      "truncate transition-opacity duration-200",
+                      fadeText && "opacity-70"
+                    )}
+                    style={fadeText ? {
+                      maskImage: 'linear-gradient(to right, black 80%, transparent 100%)',
+                      WebkitMaskImage: 'linear-gradient(to right, black 80%, transparent 100%)'
                     } : {}}
                   >
-                    {getTextDisplay("Rewards Catalog")}
+                    Rewards
                   </span>
                 )}
               </Button>
-              <Button variant="ghost" className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'}`}>
-                <Bell className={`h-4 w-4 ${shouldShowText ? 'mr-2' : ''}`} />
-                {shouldShowText && (
-                  <span 
-                    className="truncate relative overflow-hidden"
-                    style={sidebarWidth < 350 ? { 
-                      maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
-                      WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+
+              <Button variant="ghost" className={`w-full transition-all duration-200 ${iconSpacing}`}>
+                <Bell className={`h-4 w-4 flex-shrink-0 ${iconMargin}`} />
+                {showText && (
+                  <span
+                    className={cn(
+                      "truncate transition-opacity duration-200",
+                      fadeText && "opacity-70"
+                    )}
+                    style={fadeText ? {
+                      maskImage: 'linear-gradient(to right, black 80%, transparent 100%)',
+                      WebkitMaskImage: 'linear-gradient(to right, black 80%, transparent 100%)'
                     } : {}}
                   >
-                    {getTextDisplay("Communications")}
+                    Notifications
                   </span>
                 )}
               </Button>
-              <Button variant="ghost" className={`w-full ${sidebarWidth <= 30 ? 'px-1 justify-center' : 'justify-start'}`}>
-                <TrendingUp className={`h-4 w-4 ${shouldShowText ? 'mr-2' : ''}`} />
-                {shouldShowText && (
-                  <span 
-                    className="truncate relative overflow-hidden"
-                    style={sidebarWidth < 350 ? { 
-                      maskImage: 'linear-gradient(to right, black 70%, transparent 100%)',
-                      WebkitMaskImage: 'linear-gradient(to right, black 70%, transparent 100%)'
+
+              <Button variant="ghost" className={`w-full transition-all duration-200 ${iconSpacing}`}>
+                <TrendingUp className={`h-4 w-4 flex-shrink-0 ${iconMargin}`} />
+                {showText && (
+                  <span
+                    className={cn(
+                      "truncate transition-opacity duration-200",
+                      fadeText && "opacity-70"
+                    )}
+                    style={fadeText ? {
+                      maskImage: 'linear-gradient(to right, black 80%, transparent 100%)',
+                      WebkitMaskImage: 'linear-gradient(to right, black 80%, transparent 100%)'
                     } : {}}
                   >
-                    {getTextDisplay("Analytics")}
+                    Analytics
                   </span>
                 )}
               </Button>
-             </div>
+            </div>
           </nav>
         </ResizablePanel>
-        
-        <ResizableHandle />
+
+        <ResizableHandle className="w-1 bg-border hover:bg-border/80 transition-colors duration-200" />
 
         {/* Main Content */}
-        <ResizablePanel defaultSize={80} minSize={50}>
+        <ResizablePanel defaultSize={77} minSize={50}>
           <main className="p-6 h-full overflow-auto">
-          {activeTab === "dashboard" && (
-            <div className="space-y-6">
-          {/* KPI Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="border-border shadow-enterprise bg-gradient-secondary">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Active Users</CardTitle>
-                <Users className="h-4 w-4 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-foreground">1,650</div>
-                <p className="text-xs text-success">+12% from last month</p>
-              </CardContent>
-            </Card>
+            {activeTab === "dashboard" && (
+              <div className="space-y-6">
+                {/* KPI Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <Card className="border-border shadow-enterprise bg-gradient-secondary">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">Active Users</CardTitle>
+                      <Users className="h-4 w-4 text-primary" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold text-foreground">1,650</div>
+                      <p className="text-xs text-success">+12% from last month</p>
+                    </CardContent>
+                  </Card>
 
-            <Card className="border-border shadow-enterprise bg-gradient-secondary">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Points Distributed</CardTitle>
-                <Star className="h-4 w-4 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-foreground">32K</div>
-                <p className="text-xs text-success">+8% from last month</p>
-              </CardContent>
-            </Card>
+                  <Card className="border-border shadow-enterprise bg-gradient-secondary">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">Points Distributed</CardTitle>
+                      <Star className="h-4 w-4 text-primary" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold text-foreground">32K</div>
+                      <p className="text-xs text-success">+8% from last month</p>
+                    </CardContent>
+                  </Card>
 
-            <Card className="border-border shadow-enterprise bg-gradient-secondary">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Active Schemes</CardTitle>
-                <Zap className="h-4 w-4 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-foreground">18</div>
-                <p className="text-xs text-success">+3 new schemes</p>
-              </CardContent>
-            </Card>
+                  <Card className="border-border shadow-enterprise bg-gradient-secondary">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">Active Schemes</CardTitle>
+                      <Zap className="h-4 w-4 text-primary" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold text-foreground">18</div>
+                      <p className="text-xs text-success">+3 new schemes</p>
+                    </CardContent>
+                  </Card>
 
-            <Card className="border-border shadow-enterprise bg-gradient-secondary">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Engagement Rate</CardTitle>
-                <TrendingUp className="h-4 w-4 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-foreground">84%</div>
-                <p className="text-xs text-success">+5% from last month</p>
-              </CardContent>
-            </Card>
-          </div>
+                  <Card className="border-border shadow-enterprise bg-gradient-secondary">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">Engagement Rate</CardTitle>
+                      <TrendingUp className="h-4 w-4 text-primary" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold text-foreground">84%</div>
+                      <p className="text-xs text-success">+5% from last month</p>
+                    </CardContent>
+                  </Card>
+                </div>
 
-          {/* Analytics Tabs */}
-          <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="schemes">Schemes</TabsTrigger>
-              <TabsTrigger value="users">Users</TabsTrigger>
-            </TabsList>
+                {/* Analytics Tabs */}
+                <Tabs defaultValue="overview" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="overview">Overview</TabsTrigger>
+                    <TabsTrigger value="schemes">Schemes</TabsTrigger>
+                    <TabsTrigger value="users">Users</TabsTrigger>
+                  </TabsList>
 
-            <TabsContent value="overview" className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Monthly Trends */}
-                <Card className="border-border shadow-enterprise">
-                  <CardHeader>
-                    <CardTitle className="text-foreground">Monthly Trends</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <LineChart data={monthlyData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                        <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
-                        <YAxis stroke="hsl(var(--muted-foreground))" />
-                        <Line type="monotone" dataKey="points" stroke="hsl(var(--primary))" strokeWidth={2} />
-                        <Line type="monotone" dataKey="users" stroke="hsl(var(--success))" strokeWidth={2} />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
+                  <TabsContent value="overview" className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {/* Monthly Trends */}
+                      <Card className="border-border shadow-enterprise">
+                        <CardHeader>
+                          <CardTitle className="text-foreground">Monthly Trends</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ResponsiveContainer width="100%" height={300}>
+                            <LineChart data={monthlyData}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                              <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
+                              <YAxis stroke="hsl(var(--muted-foreground))" />
+                              <Line type="monotone" dataKey="points" stroke="hsl(var(--primary))" strokeWidth={2} />
+                              <Line type="monotone" dataKey="users" stroke="hsl(var(--success))" strokeWidth={2} />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </CardContent>
+                      </Card>
 
-                {/* User Distribution */}
-                <Card className="border-border shadow-enterprise">
-                  <CardHeader>
-                    <CardTitle className="text-foreground">User Distribution</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <PieChart>
-                        <Pie
-                          data={userTypeData}
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="value"
-                          label={({ name, value }) => `${name}: ${value}%`}
-                        >
-                          {userTypeData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
+                      {/* User Distribution */}
+                      <Card className="border-border shadow-enterprise">
+                        <CardHeader>
+                          <CardTitle className="text-foreground">User Distribution</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ResponsiveContainer width="100%" height={300}>
+                            <PieChart>
+                              <Pie
+                                data={userTypeData}
+                                cx="50%"
+                                cy="50%"
+                                outerRadius={80}
+                                fill="#8884d8"
+                                dataKey="value"
+                                label={({ name, value }) => `${name}: ${value}%`}
+                              >
+                                {userTypeData.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={entry.color} />
+                                ))}
+                              </Pie>
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="schemes" className="space-y-6">
+                    {/* Top Performing Schemes */}
+                    <Card className="border-border shadow-enterprise">
+                      <CardHeader className="flex flex-row items-center justify-between">
+                        <CardTitle className="text-foreground">Top Performing Schemes</CardTitle>
+                        <Button className="bg-gradient-primary text-primary-foreground shadow-glass">
+                          Create New Scheme
+                        </Button>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {topSchemes.map((scheme, index) => (
+                            <div key={index} className="flex items-center justify-between p-4 border border-border rounded-lg bg-gradient-secondary">
+                              <div className="space-y-1">
+                                <h3 className="font-medium text-foreground">{scheme.name}</h3>
+                                <div className="flex gap-4 text-sm text-muted-foreground">
+                                  <span>{scheme.participants} participants</span>
+                                  <span>{scheme.points} points distributed</span>
+                                </div>
+                              </div>
+                              <Badge
+                                variant={scheme.status === 'Active' ? 'default' : 'secondary'}
+                                className={scheme.status === 'Active' ? 'bg-gradient-success text-success-foreground' : ''}
+                              >
+                                {scheme.status}
+                              </Badge>
+                            </div>
                           ))}
-                        </Pie>
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="schemes" className="space-y-6">
-              {/* Top Performing Schemes */}
-              <Card className="border-border shadow-enterprise">
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="text-foreground">Top Performing Schemes</CardTitle>
-                  <Button className="bg-gradient-primary text-primary-foreground shadow-glass">
-                    Create New Scheme
-                  </Button>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {topSchemes.map((scheme, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 border border-border rounded-lg bg-gradient-secondary">
-                        <div className="space-y-1">
-                          <h3 className="font-medium text-foreground">{scheme.name}</h3>
-                          <div className="flex gap-4 text-sm text-muted-foreground">
-                            <span>{scheme.participants} participants</span>
-                            <span>{scheme.points} points distributed</span>
-                          </div>
                         </div>
-                        <Badge 
-                          variant={scheme.status === 'Active' ? 'default' : 'secondary'}
-                          className={scheme.status === 'Active' ? 'bg-gradient-success text-success-foreground' : ''}
-                        >
-                          {scheme.status}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
 
-            <TabsContent value="users" className="space-y-6">
-              {/* User Activity */}
-              <Card className="border-border shadow-enterprise">
-                <CardHeader>
-                  <CardTitle className="text-foreground">User Activity Trends</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={monthlyData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
-                      <YAxis stroke="hsl(var(--muted-foreground))" />
-                      <Bar dataKey="users" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
-      )}
+                  <TabsContent value="users" className="space-y-6">
+                    {/* User Activity */}
+                    <Card className="border-border shadow-enterprise">
+                      <CardHeader>
+                        <CardTitle className="text-foreground">User Activity Trends</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <ResponsiveContainer width="100%" height={300}>
+                          <BarChart data={monthlyData}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                            <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
+                            <YAxis stroke="hsl(var(--muted-foreground))" />
+                            <Bar dataKey="users" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                </Tabs>
+              </div>
+            )}
             {activeTab === "schemes" && <SchemeManagement />}
             {activeTab === "users" && <UserManagement />}
             {activeTab === "rules" && <RuleEngine />}
