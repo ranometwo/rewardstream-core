@@ -1,3 +1,4 @@
+import React, { useState, useRef, useCallback, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -5,36 +6,112 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
-import { Users, Trophy, Zap, TrendingUp, Settings, Bell, Award, Target, Gift, Star, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { Users, Trophy, Zap, TrendingUp, Settings, Bell, Award, Target, Gift, Star, PanelLeftClose, PanelLeftOpen, LucideIcon } from "lucide-react";
 import SchemeManagement from "./SchemeManagement";
 import UserManagement from "./UserManagement";
 import RuleEngine from "./RuleEngine";
 import ReportingDashboard from "./ReportingDashboard";
-import { useState, useEffect, useRef, useCallback } from "react";
 
-const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState("dashboard");
+type TabType = "dashboard" | "schemes" | "users" | "rules" | "reporting";
+
+interface MonthlyData {
+  month: string;
+  points: number;
+  users: number;
+  schemes: number;
+}
+
+interface UserTypeData {
+  name: string;
+  value: number;
+  color: string;
+}
+
+interface Scheme {
+  name: string;
+  participants: number;
+  points: number;
+  status: "Active" | "Completed";
+}
+
+interface NavigationItem {
+  id: TabType | string;
+  label: string;
+  icon: LucideIcon;
+  onClick?: () => void;
+}
+
+interface TextVisibility {
+  showText: boolean;
+  fadeText: boolean;
+  iconSpacing: string;
+  iconMargin: string;
+}
+
+interface KPICard {
+  title: string;
+  value: string;
+  change: string;
+  icon: LucideIcon;
+  color?: string;
+}
+
+const BREAKPOINTS = {
+  ICON_ONLY: 40,
+  NARROW_TEXT: 180,
+  COMFORTABLE: 200,
+  MOBILE: 768,
+  TABLET: 1024,
+} as const;
+
+const SIDEBAR_CONFIG = {
+  COLLAPSED_WIDTH: 40,
+  EXPANDED_WIDTH: 180,
+  CONTAINER_PADDING: 24,
+  DEFAULT_SIZE: 23,
+  MIN_SIZE: 4,
+  MAX_SIZE: 40,
+} as const;
+
+const MOCK_DATA = {
+  monthlyData: [
+    { month: 'Jan', points: 12000, users: 850, schemes: 5 },
+    { month: 'Feb', points: 15000, users: 920, schemes: 7 },
+    { month: 'Mar', points: 18000, users: 1100, schemes: 9 },
+    { month: 'Apr', points: 22000, users: 1250, schemes: 12 },
+    { month: 'May', points: 28000, users: 1400, schemes: 15 },
+    { month: 'Jun', points: 32000, users: 1650, schemes: 18 },
+  ] as MonthlyData[],
+
+  userTypeData: [
+    { name: 'Painters', value: 45, color: '#8B5CF6' },
+    { name: 'Contractors', value: 35, color: '#06B6D4' },
+    { name: 'AIDs', value: 20, color: '#10B981' },
+  ] as UserTypeData[],
+
+  topSchemes: [
+    { name: 'New User Bonus', participants: 1200, points: 24000, status: 'Active' as const },
+    { name: 'Referral Program', participants: 850, points: 17000, status: 'Active' as const },
+    { name: 'Monthly Challenge', participants: 650, points: 13000, status: 'Active' as const },
+    { name: 'Lucky Draw Q2', participants: 2100, points: 0, status: 'Completed' as const },
+  ] as Scheme[],
+
+  kpiCards: [
+    { title: "Active Users", value: "1,650", change: "+12% from last month", icon: Users },
+    { title: "Points Distributed", value: "32K", change: "+8% from last month", icon: Star },
+    { title: "Active Schemes", value: "18", change: "+3 new schemes", icon: Zap },
+    { title: "Engagement Rate", value: "84%", change: "+5% from last month", icon: TrendingUp },
+  ] as KPICard[],
+} as const;
+
+const Dashboard: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<TabType>("dashboard");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const panelGroupRef = useRef<any>(null);
 
-  // Responsive breakpoints for optimal UX
-  const BREAKPOINTS = {
-    ICON_ONLY: 60,           // Below 60px = icon-only mode
-    NARROW_TEXT: 180,        // 60-180px = narrow with fade
-    COMFORTABLE: 200,        // 200px+ = comfortable reading
-    MOBILE: 768,             // Mobile breakpoint
-    TABLET: 1024,            // Tablet breakpoint
-  };
-
-  // Constants for consistent behavior
-  const COLLAPSED_WIDTH = 48;
-  const EXPANDED_WIDTH = 280;
-  const CONTAINER_PADDING = 24;
-
-  // Smooth layout change handler with auto-snap
   const handleLayoutChange = useCallback((sizes: number[]) => {
-    const containerWidth = window.innerWidth - CONTAINER_PADDING;
+    const containerWidth = window.innerWidth - SIDEBAR_CONFIG.CONTAINER_PADDING;
     const actualPixelWidth = (sizes[0] / 100) * containerWidth;
 
     setSidebarWidth(actualPixelWidth);
@@ -47,7 +124,7 @@ const Dashboard = () => {
       if (shouldBeCollapsed && panelGroupRef.current) {
         requestAnimationFrame(() => {
           setTimeout(() => {
-            const collapsedPercentage = (COLLAPSED_WIDTH / containerWidth) * 100;
+            const collapsedPercentage = (SIDEBAR_CONFIG.COLLAPSED_WIDTH / containerWidth) * 100;
             panelGroupRef.current?.setLayout([collapsedPercentage, 100 - collapsedPercentage]);
           }, 16);
         });
@@ -55,14 +132,12 @@ const Dashboard = () => {
     }
   }, [sidebarCollapsed]);
 
-  // Smooth toggle function with consistent timing
   const toggleSidebar = useCallback(() => {
-    const containerWidth = window.innerWidth - CONTAINER_PADDING;
+    const containerWidth = window.innerWidth - SIDEBAR_CONFIG.CONTAINER_PADDING;
 
     if (sidebarCollapsed) {
-      const targetPercentage = Math.min((EXPANDED_WIDTH / containerWidth) * 100, 35);
-
-      setSidebarWidth(EXPANDED_WIDTH);
+      const targetPercentage = Math.min((SIDEBAR_CONFIG.EXPANDED_WIDTH / containerWidth) * 100, 35);
+      setSidebarWidth(SIDEBAR_CONFIG.EXPANDED_WIDTH);
       setSidebarCollapsed(false);
 
       requestAnimationFrame(() => {
@@ -71,9 +146,8 @@ const Dashboard = () => {
         }, 20);
       });
     } else {
-      const collapsedPercentage = (COLLAPSED_WIDTH / containerWidth) * 100;
-
-      setSidebarWidth(COLLAPSED_WIDTH);
+      const collapsedPercentage = (SIDEBAR_CONFIG.COLLAPSED_WIDTH / containerWidth) * 100;
+      setSidebarWidth(SIDEBAR_CONFIG.COLLAPSED_WIDTH);
       setSidebarCollapsed(true);
 
       requestAnimationFrame(() => {
@@ -84,8 +158,7 @@ const Dashboard = () => {
     }
   }, [sidebarCollapsed]);
 
-  // Smart text display logic
-  const getTextVisibility = () => {
+  const textVisibility = useMemo((): TextVisibility => {
     if (sidebarWidth < BREAKPOINTS.ICON_ONLY) {
       return { showText: false, fadeText: false, iconSpacing: 'justify-center', iconMargin: '' };
     }
@@ -93,32 +166,79 @@ const Dashboard = () => {
       return { showText: true, fadeText: true, iconSpacing: 'justify-start', iconMargin: 'mr-2' };
     }
     return { showText: true, fadeText: false, iconSpacing: 'justify-start', iconMargin: 'mr-2' };
-  };
+  }, [sidebarWidth]);
 
-  const { showText, fadeText, iconSpacing, iconMargin } = getTextVisibility();
+  const { showText, fadeText, iconSpacing, iconMargin } = textVisibility;
 
-  // Mock data for analytics
-  const monthlyData = [
-    { month: 'Jan', points: 12000, users: 850, schemes: 5 },
-    { month: 'Feb', points: 15000, users: 920, schemes: 7 },
-    { month: 'Mar', points: 18000, users: 1100, schemes: 9 },
-    { month: 'Apr', points: 22000, users: 1250, schemes: 12 },
-    { month: 'May', points: 28000, users: 1400, schemes: 15 },
-    { month: 'Jun', points: 32000, users: 1650, schemes: 18 },
-  ];
+  const navigationItems = useMemo((): NavigationItem[] => [
+    { id: "dashboard", label: "Dashboard", icon: TrendingUp },
+    { id: "schemes", label: "Schemes", icon: Zap },
+    { id: "users", label: "Users", icon: Users },
+    { id: "rules", label: "Rules", icon: Target },
+    { id: "reporting", label: "Reports", icon: Award },
+    { id: "rewards", label: "Rewards", icon: Gift },
+    { id: "notifications", label: "Notifications", icon: Bell },
+    { id: "analytics", label: "Analytics", icon: TrendingUp },
+  ], []);
 
-  const userTypeData = [
-    { name: 'Painters', value: 45, color: '#8B5CF6' },
-    { name: 'Contractors', value: 35, color: '#06B6D4' },
-    { name: 'AIDs', value: 20, color: '#10B981' },
-  ];
+  const NavButton = React.memo<{
+    item: NavigationItem;
+    isActive: boolean;
+    onClick: () => void;
+  }>(({ item, isActive, onClick }) => (
+    <Button
+      variant={isActive ? "enterprise" : "ghost"}
+      className={`w-full transition-all duration-200 ${iconSpacing}`}
+      onClick={onClick}
+    >
+      <item.icon className={`h-4 w-4 flex-shrink-0 ${iconMargin}`} />
+      {showText && (
+        <span
+          className={cn(
+            "truncate transition-opacity duration-200",
+            fadeText && "opacity-70"
+          )}
+          style={fadeText ? {
+            maskImage: 'linear-gradient(to right, black 80%, transparent 100%)',
+            WebkitMaskImage: 'linear-gradient(to right, black 80%, transparent 100%)'
+          } : {}}
+        >
+          {item.label}
+        </span>
+      )}
+    </Button>
+  ));
 
-  const topSchemes = [
-    { name: 'New User Bonus', participants: 1200, points: 24000, status: 'Active' },
-    { name: 'Referral Program', participants: 850, points: 17000, status: 'Active' },
-    { name: 'Monthly Challenge', participants: 650, points: 13000, status: 'Active' },
-    { name: 'Lucky Draw Q2', participants: 2100, points: 0, status: 'Completed' },
-  ];
+  const KPICardComponent = React.memo<{ data: KPICard }>(({ data }) => (
+    <Card className="border-border shadow-enterprise bg-gradient-secondary">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium text-muted-foreground">{data.title}</CardTitle>
+        <data.icon className="h-4 w-4 text-primary" />
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold text-foreground">{data.value}</div>
+        <p className="text-xs text-success">{data.change}</p>
+      </CardContent>
+    </Card>
+  ));
+
+  const SchemeCard = React.memo<{ scheme: Scheme; index: number }>(({ scheme, index }) => (
+    <div className="flex items-center justify-between p-4 border border-border rounded-lg bg-gradient-secondary">
+      <div className="space-y-1">
+        <h3 className="font-medium text-foreground">{scheme.name}</h3>
+        <div className="flex gap-4 text-sm text-muted-foreground">
+          <span>{scheme.participants} participants</span>
+          <span>{scheme.points} points distributed</span>
+        </div>
+      </div>
+      <Badge
+        variant={scheme.status === 'Active' ? 'default' : 'secondary'}
+        className={scheme.status === 'Active' ? 'bg-gradient-success text-success-foreground' : ''}
+      >
+        {scheme.status}
+      </Badge>
+    </div>
+  ));
 
   return (
     <div className="min-h-screen bg-background">
@@ -159,243 +279,47 @@ const Dashboard = () => {
         onLayout={handleLayoutChange}
         ref={panelGroupRef}
       >
-        {/* Sidebar Navigation */}
         <ResizablePanel
-          defaultSize={23}
-          minSize={4}
-          maxSize={40}
+          defaultSize={SIDEBAR_CONFIG.DEFAULT_SIZE}
+          minSize={SIDEBAR_CONFIG.MIN_SIZE}
+          maxSize={SIDEBAR_CONFIG.MAX_SIZE}
           className="border-r border-border bg-card/30 backdrop-blur-sm"
         >
           <nav className="h-full">
             <div className="space-y-2 pt-4 px-2">
-              {/* Dashboard */}
-              <Button
-                variant={activeTab === "dashboard" ? "enterprise" : "ghost"}
-                className={`w-full transition-all duration-200 ${iconSpacing}`}
-                onClick={() => setActiveTab("dashboard")}
-              >
-                <TrendingUp className={`h-4 w-4 flex-shrink-0 ${iconMargin}`} />
-                {showText && (
-                  <span
-                    className={cn(
-                      "truncate transition-opacity duration-200",
-                      fadeText && "opacity-70"
-                    )}
-                    style={fadeText ? {
-                      maskImage: 'linear-gradient(to right, black 80%, transparent 100%)',
-                      WebkitMaskImage: 'linear-gradient(to right, black 80%, transparent 100%)'
-                    } : {}}
-                  >
-                    Dashboard
-                  </span>
-                )}
-              </Button>
+              {navigationItems.slice(0, 5).map((item) => (
+                <NavButton
+                  key={item.id}
+                  item={item}
+                  isActive={activeTab === item.id}
+                  onClick={() => setActiveTab(item.id as TabType)}
+                />
+              ))}
 
-              {/* Scheme Management */}
-              <Button
-                variant={activeTab === "schemes" ? "enterprise" : "ghost"}
-                className={`w-full transition-all duration-200 ${iconSpacing}`}
-                onClick={() => setActiveTab("schemes")}
-              >
-                <Zap className={`h-4 w-4 flex-shrink-0 ${iconMargin}`} />
-                {showText && (
-                  <span
-                    className={cn(
-                      "truncate transition-opacity duration-200",
-                      fadeText && "opacity-70"
-                    )}
-                    style={fadeText ? {
-                      maskImage: 'linear-gradient(to right, black 80%, transparent 100%)',
-                      WebkitMaskImage: 'linear-gradient(to right, black 80%, transparent 100%)'
-                    } : {}}
-                  >
-                    Schemes
-                  </span>
-                )}
-              </Button>
-
-              {/* User Management */}
-              <Button
-                variant={activeTab === "users" ? "enterprise" : "ghost"}
-                className={`w-full transition-all duration-200 ${iconSpacing}`}
-                onClick={() => setActiveTab("users")}
-              >
-                <Users className={`h-4 w-4 flex-shrink-0 ${iconMargin}`} />
-                {showText && (
-                  <span
-                    className={cn(
-                      "truncate transition-opacity duration-200",
-                      fadeText && "opacity-70"
-                    )}
-                    style={fadeText ? {
-                      maskImage: 'linear-gradient(to right, black 80%, transparent 100%)',
-                      WebkitMaskImage: 'linear-gradient(to right, black 80%, transparent 100%)'
-                    } : {}}
-                  >
-                    Users
-                  </span>
-                )}
-              </Button>
-
-              {/* Rule Engine */}
-              <Button
-                variant={activeTab === "rules" ? "enterprise" : "ghost"}
-                className={`w-full transition-all duration-200 ${iconSpacing}`}
-                onClick={() => setActiveTab("rules")}
-              >
-                <Target className={`h-4 w-4 flex-shrink-0 ${iconMargin}`} />
-                {showText && (
-                  <span
-                    className={cn(
-                      "truncate transition-opacity duration-200",
-                      fadeText && "opacity-70"
-                    )}
-                    style={fadeText ? {
-                      maskImage: 'linear-gradient(to right, black 80%, transparent 100%)',
-                      WebkitMaskImage: 'linear-gradient(to right, black 80%, transparent 100%)'
-                    } : {}}
-                  >
-                    Rules
-                  </span>
-                )}
-              </Button>
-
-              {/* Reporting */}
-              <Button
-                variant={activeTab === "reporting" ? "enterprise" : "ghost"}
-                className={`w-full transition-all duration-200 ${iconSpacing}`}
-                onClick={() => setActiveTab("reporting")}
-              >
-                <Award className={`h-4 w-4 flex-shrink-0 ${iconMargin}`} />
-                {showText && (
-                  <span
-                    className={cn(
-                      "truncate transition-opacity duration-200",
-                      fadeText && "opacity-70"
-                    )}
-                    style={fadeText ? {
-                      maskImage: 'linear-gradient(to right, black 80%, transparent 100%)',
-                      WebkitMaskImage: 'linear-gradient(to right, black 80%, transparent 100%)'
-                    } : {}}
-                  >
-                    Reports
-                  </span>
-                )}
-              </Button>
-
-              {/* Other Options */}
-              <Button variant="ghost" className={`w-full transition-all duration-200 ${iconSpacing}`}>
-                <Gift className={`h-4 w-4 flex-shrink-0 ${iconMargin}`} />
-                {showText && (
-                  <span
-                    className={cn(
-                      "truncate transition-opacity duration-200",
-                      fadeText && "opacity-70"
-                    )}
-                    style={fadeText ? {
-                      maskImage: 'linear-gradient(to right, black 80%, transparent 100%)',
-                      WebkitMaskImage: 'linear-gradient(to right, black 80%, transparent 100%)'
-                    } : {}}
-                  >
-                    Rewards
-                  </span>
-                )}
-              </Button>
-
-              <Button variant="ghost" className={`w-full transition-all duration-200 ${iconSpacing}`}>
-                <Bell className={`h-4 w-4 flex-shrink-0 ${iconMargin}`} />
-                {showText && (
-                  <span
-                    className={cn(
-                      "truncate transition-opacity duration-200",
-                      fadeText && "opacity-70"
-                    )}
-                    style={fadeText ? {
-                      maskImage: 'linear-gradient(to right, black 80%, transparent 100%)',
-                      WebkitMaskImage: 'linear-gradient(to right, black 80%, transparent 100%)'
-                    } : {}}
-                  >
-                    Notifications
-                  </span>
-                )}
-              </Button>
-
-              <Button variant="ghost" className={`w-full transition-all duration-200 ${iconSpacing}`}>
-                <TrendingUp className={`h-4 w-4 flex-shrink-0 ${iconMargin}`} />
-                {showText && (
-                  <span
-                    className={cn(
-                      "truncate transition-opacity duration-200",
-                      fadeText && "opacity-70"
-                    )}
-                    style={fadeText ? {
-                      maskImage: 'linear-gradient(to right, black 80%, transparent 100%)',
-                      WebkitMaskImage: 'linear-gradient(to right, black 80%, transparent 100%)'
-                    } : {}}
-                  >
-                    Analytics
-                  </span>
-                )}
-              </Button>
+              {navigationItems.slice(5).map((item) => (
+                <NavButton
+                  key={item.id}
+                  item={item}
+                  isActive={false}
+                  onClick={() => {}}
+                />
+              ))}
             </div>
           </nav>
         </ResizablePanel>
 
         <ResizableHandle className="w-1 bg-border hover:bg-border/80 transition-colors duration-200" />
 
-        {/* Main Content */}
         <ResizablePanel defaultSize={77} minSize={50}>
           <main className="p-6 h-full overflow-auto">
             {activeTab === "dashboard" && (
               <div className="space-y-6">
-                {/* KPI Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <Card className="border-border shadow-enterprise bg-gradient-secondary">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium text-muted-foreground">Active Users</CardTitle>
-                      <Users className="h-4 w-4 text-primary" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold text-foreground">1,650</div>
-                      <p className="text-xs text-success">+12% from last month</p>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-border shadow-enterprise bg-gradient-secondary">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium text-muted-foreground">Points Distributed</CardTitle>
-                      <Star className="h-4 w-4 text-primary" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold text-foreground">32K</div>
-                      <p className="text-xs text-success">+8% from last month</p>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-border shadow-enterprise bg-gradient-secondary">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium text-muted-foreground">Active Schemes</CardTitle>
-                      <Zap className="h-4 w-4 text-primary" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold text-foreground">18</div>
-                      <p className="text-xs text-success">+3 new schemes</p>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-border shadow-enterprise bg-gradient-secondary">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium text-muted-foreground">Engagement Rate</CardTitle>
-                      <TrendingUp className="h-4 w-4 text-primary" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold text-foreground">84%</div>
-                      <p className="text-xs text-success">+5% from last month</p>
-                    </CardContent>
-                  </Card>
+                  {MOCK_DATA.kpiCards.map((card, index) => (
+                    <KPICardComponent key={`kpi-${index}`} data={card} />
+                  ))}
                 </div>
 
-                {/* Analytics Tabs */}
                 <Tabs defaultValue="overview" className="w-full">
                   <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -412,7 +336,7 @@ const Dashboard = () => {
                         </CardHeader>
                         <CardContent>
                           <ResponsiveContainer width="100%" height={300}>
-                            <LineChart data={monthlyData}>
+                            <LineChart data={MOCK_DATA.monthlyData}>
                               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                               <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
                               <YAxis stroke="hsl(var(--muted-foreground))" />
@@ -432,7 +356,7 @@ const Dashboard = () => {
                           <ResponsiveContainer width="100%" height={300}>
                             <PieChart>
                               <Pie
-                                data={userTypeData}
+                                data={MOCK_DATA.userTypeData}
                                 cx="50%"
                                 cy="50%"
                                 outerRadius={80}
@@ -440,7 +364,7 @@ const Dashboard = () => {
                                 dataKey="value"
                                 label={({ name, value }) => `${name}: ${value}%`}
                               >
-                                {userTypeData.map((entry, index) => (
+                                {MOCK_DATA.userTypeData.map((entry, index) => (
                                   <Cell key={`cell-${index}`} fill={entry.color} />
                                 ))}
                               </Pie>
@@ -462,22 +386,8 @@ const Dashboard = () => {
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-4">
-                          {topSchemes.map((scheme, index) => (
-                            <div key={index} className="flex items-center justify-between p-4 border border-border rounded-lg bg-gradient-secondary">
-                              <div className="space-y-1">
-                                <h3 className="font-medium text-foreground">{scheme.name}</h3>
-                                <div className="flex gap-4 text-sm text-muted-foreground">
-                                  <span>{scheme.participants} participants</span>
-                                  <span>{scheme.points} points distributed</span>
-                                </div>
-                              </div>
-                              <Badge
-                                variant={scheme.status === 'Active' ? 'default' : 'secondary'}
-                                className={scheme.status === 'Active' ? 'bg-gradient-success text-success-foreground' : ''}
-                              >
-                                {scheme.status}
-                              </Badge>
-                            </div>
+                          {MOCK_DATA.topSchemes.map((scheme, index) => (
+                            <SchemeCard key={`scheme-${scheme.name}-${index}`} scheme={scheme} index={index} />
                           ))}
                         </div>
                       </CardContent>
@@ -492,7 +402,7 @@ const Dashboard = () => {
                       </CardHeader>
                       <CardContent>
                         <ResponsiveContainer width="100%" height={300}>
-                          <BarChart data={monthlyData}>
+                          <BarChart data={MOCK_DATA.monthlyData}>
                             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                             <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
                             <YAxis stroke="hsl(var(--muted-foreground))" />
@@ -505,10 +415,26 @@ const Dashboard = () => {
                 </Tabs>
               </div>
             )}
-            {activeTab === "schemes" && <SchemeManagement />}
-            {activeTab === "users" && <UserManagement />}
-            {activeTab === "rules" && <RuleEngine />}
-            {activeTab === "reporting" && <ReportingDashboard />}
+            {activeTab === "schemes" && (
+              <React.Suspense fallback={<div className="flex items-center justify-center h-64">Loading...</div>}>
+                <SchemeManagement />
+              </React.Suspense>
+            )}
+            {activeTab === "users" && (
+              <React.Suspense fallback={<div className="flex items-center justify-center h-64">Loading...</div>}>
+                <UserManagement />
+              </React.Suspense>
+            )}
+            {activeTab === "rules" && (
+              <React.Suspense fallback={<div className="flex items-center justify-center h-64">Loading...</div>}>
+                <RuleEngine />
+              </React.Suspense>
+            )}
+            {activeTab === "reporting" && (
+              <React.Suspense fallback={<div className="flex items-center justify-center h-64">Loading...</div>}>
+                <ReportingDashboard />
+              </React.Suspense>
+            )}
           </main>
         </ResizablePanel>
       </ResizablePanelGroup>
@@ -516,4 +442,6 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+Dashboard.displayName = 'Dashboard';
+
+export default React.memo(Dashboard);
