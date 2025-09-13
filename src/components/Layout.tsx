@@ -161,7 +161,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           defaultSize={SIDEBAR_CONFIG.DEFAULT_SIZE}
           minSize={SIDEBAR_CONFIG.MIN_SIZE}
           maxSize={SIDEBAR_CONFIG.MAX_SIZE}
-          className="border-r border-border bg-card/30 backdrop-blur-sm transition-all duration-300 ease-out"
+          className="border-r border-border bg-card/30 backdrop-blur-sm"
         >
           <nav className="h-full">
             <div className="space-y-2 pt-4 px-2">
@@ -176,7 +176,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </nav>
         </ResizablePanel>
 
-        <ResizableHandle className="w-1 bg-border hover:bg-border/80 transition-all duration-200 hover:w-1.5" />
+        <ResizableHandle className="w-1 bg-border hover:bg-border/80" />
 
         <ResizablePanel defaultSize={85} minSize={50}>
           <main className="p-6 h-full overflow-auto">
