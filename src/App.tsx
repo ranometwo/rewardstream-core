@@ -7,10 +7,12 @@ import Dashboard from "./pages/Dashboard";
 import Schemes from "./pages/Schemes";
 import Users from "./pages/Users";
 import Rules from "./pages/Rules";
-import Reports from "./pages/Reports";
 import Rewards from "./pages/Rewards";
 import Notifications from "./pages/Notifications";
-import Analytics from "./pages/Analytics";
+import AnalyticsLanding from "./pages/analytics/AnalyticsLanding";
+import SchemeReports from "./pages/analytics/SchemeReports";
+import UserReports from "./pages/analytics/UserReports";
+import AdvancedAnalytics from "./pages/analytics/AdvancedAnalytics";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,10 +28,12 @@ const App = () => (
           <Route path="/schemes" element={<Schemes />} />
           <Route path="/users" element={<Users />} />
           <Route path="/rules" element={<Rules />} />
-          <Route path="/reports" element={<Reports />} />
           <Route path="/rewards" element={<Rewards />} />
           <Route path="/notifications" element={<Notifications />} />
-          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/analytics" element={<AnalyticsLanding />} />
+          <Route path="/analytics/schemes" element={<SchemeReports />} />
+          <Route path="/analytics/users" element={<UserReports />} />
+          <Route path="/analytics/advanced" element={<AdvancedAnalytics />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

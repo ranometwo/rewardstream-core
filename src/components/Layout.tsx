@@ -84,7 +84,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     { id: "schemes", label: "Schemes", icon: Zap, path: "/schemes" },
     { id: "users", label: "Users", icon: Users, path: "/users" },
     { id: "rules", label: "Rules", icon: Target, path: "/rules" },
-    { id: "reports", label: "Reports", icon: Award, path: "/reports" },
     { id: "rewards", label: "Rewards", icon: Gift, path: "/rewards" },
     { id: "notifications", label: "Notifications", icon: Bell, path: "/notifications" },
     { id: "analytics", label: "Analytics", icon: TrendingUp, path: "/analytics" },
@@ -169,7 +168,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 <NavButton
                   key={item.id}
                   item={item}
-                  isActive={location.pathname === item.path}
+                  isActive={location.pathname === item.path || 
+                           (item.id === "analytics" && location.pathname.startsWith("/analytics"))}
                 />
               ))}
             </div>
