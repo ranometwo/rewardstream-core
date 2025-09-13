@@ -5,13 +5,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
-import { Users, Trophy, Zap, TrendingUp, Settings, Bell, Award, Target, Gift, Star, PanelLeftClose, PanelLeftOpen, LucideIcon } from "lucide-react";
+import { Users, Trophy, Zap, TrendingUp, Settings, Bell, Award, Target, Gift, Star, PanelLeftClose, PanelLeftOpen, LucideIcon, ChevronDown, ChevronRight, BarChart3, Database } from "lucide-react";
 
 interface NavigationItem {
   id: string;
   label: string;
   icon: LucideIcon;
   path: string;
+  children?: NavigationItem[];
+}
+
+interface ExpandedSections {
+  [key: string]: boolean;
 }
 
 interface TextVisibility {
@@ -38,6 +43,9 @@ const SIDEBAR_CONFIG = {
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [sidebarWidth, setSidebarWidth] = useState<number>(SIDEBAR_CONFIG.EXPANDED_WIDTH);
+  const [expandedSections, setExpandedSections] = useState<ExpandedSections>({
+    analytics: true // Auto-expand analytics by default
+  });
   const panelGroupRef = useRef<any>(null);
   const location = useLocation();
 
@@ -86,36 +94,109 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     { id: "rules", label: "Rules", icon: Target, path: "/rules" },
     { id: "rewards", label: "Rewards", icon: Gift, path: "/rewards" },
     { id: "notifications", label: "Notifications", icon: Bell, path: "/notifications" },
-    { id: "analytics", label: "Analytics", icon: TrendingUp, path: "/analytics" },
+    { 
+      id: "analytics", 
+      label: "Analytics", 
+      icon: Database, 
+      path: "/analytics",
+      children: [
+        { id: "analytics-overview", label: "Overview", icon: TrendingUp, path: "/analytics" },
+        { id: "analytics-schemes", label: "Scheme Reports", icon: BarChart3, path: "/analytics/schemes" },
+        { id: "analytics-users", label: "User Reports", icon: Users, path: "/analytics/users" },
+        { id: "analytics-advanced", label: "Advanced", icon: Target, path: "/analytics/advanced" },
+      ]
+    },
   ], []);
+
+  const toggleSection = useCallback((sectionId: string) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [sectionId]: !prev[sectionId]
+    }));
+  }, []);
+
+  // Auto-expand section when navigating to a sub-route
+  React.useEffect(() => {
+    const currentPath = location.pathname;
+    if (currentPath.startsWith('/analytics') && !expandedSections.analytics) {
+      setExpandedSections(prev => ({ ...prev, analytics: true }));
+    }
+  }, [location.pathname, expandedSections.analytics]);
+
+  const isItemActive = useCallback((item: NavigationItem): boolean => {
+    if (item.children) {
+      // For parent items, check if any child is active
+      return item.children.some(child => location.pathname === child.path);
+    }
+    return location.pathname === item.path;
+  }, [location.pathname]);
 
   const NavButton = React.memo<{
     item: NavigationItem;
     isActive: boolean;
-  }>(({ item, isActive }) => (
-    <Link to={item.path}>
+    isChild?: boolean;
+    onToggle?: () => void;
+  }>(({ item, isActive, isChild = false, onToggle }) => {
+    const hasChildren = item.children && item.children.length > 0;
+    const isExpanded = hasChildren && expandedSections[item.id];
+
+    const handleClick = (e: React.MouseEvent) => {
+      if (hasChildren && onToggle) {
+        e.preventDefault();
+        onToggle();
+      }
+    };
+
+    const buttonContent = (
       <Button
         variant={isActive ? "enterprise" : "ghost"}
-        className={`w-full transition-all duration-200 ${iconSpacing}`}
+        className={cn(
+          "w-full transition-all duration-200",
+          iconSpacing,
+          isChild && "ml-4 text-sm",
+          hasChildren && "justify-between"
+        )}
+        onClick={handleClick}
       >
-        <item.icon className={`h-4 w-4 flex-shrink-0 ${iconMargin}`} />
-        {showText && (
-          <span
-            className={cn(
-              "truncate transition-opacity duration-200",
-              fadeText && "opacity-70"
+        <div className={cn("flex items-center", iconSpacing === 'justify-center' ? 'justify-center' : '')}>
+          <item.icon className={`h-4 w-4 flex-shrink-0 ${iconMargin}`} />
+          {showText && (
+            <span
+              className={cn(
+                "truncate transition-opacity duration-200",
+                fadeText && "opacity-70"
+              )}
+              style={fadeText ? {
+                maskImage: 'linear-gradient(to right, black 80%, transparent 100%)',
+                WebkitMaskImage: 'linear-gradient(to right, black 80%, transparent 100%)'
+              } : {}}
+            >
+              {item.label}
+            </span>
+          )}
+        </div>
+        {hasChildren && showText && (
+          <div className="flex-shrink-0 ml-2">
+            {isExpanded ? (
+              <ChevronDown className="h-3 w-3 transition-transform duration-200" />
+            ) : (
+              <ChevronRight className="h-3 w-3 transition-transform duration-200" />
             )}
-            style={fadeText ? {
-              maskImage: 'linear-gradient(to right, black 80%, transparent 100%)',
-              WebkitMaskImage: 'linear-gradient(to right, black 80%, transparent 100%)'
-            } : {}}
-          >
-            {item.label}
-          </span>
+          </div>
         )}
       </Button>
-    </Link>
-  ));
+    );
+
+    if (hasChildren) {
+      return buttonContent;
+    }
+
+    return (
+      <Link to={item.path}>
+        {buttonContent}
+      </Link>
+    );
+  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -164,14 +245,38 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         >
           <nav className="h-full">
             <div className="space-y-2 pt-4 px-2">
-              {navigationItems.map((item) => (
-                <NavButton
-                  key={item.id}
-                  item={item}
-                  isActive={location.pathname === item.path || 
-                           (item.id === "analytics" && location.pathname.startsWith("/analytics"))}
-                />
-              ))}
+              {navigationItems.map((item) => {
+                const isActive = isItemActive(item);
+                const hasChildren = item.children && item.children.length > 0;
+                const isExpanded = hasChildren && expandedSections[item.id];
+                
+                return (
+                  <div key={item.id}>
+                    <NavButton
+                      item={item}
+                      isActive={isActive}
+                      onToggle={hasChildren ? () => toggleSection(item.id) : undefined}
+                    />
+                    {hasChildren && isExpanded && showText && (
+                      <div 
+                        className="mt-1 space-y-1 overflow-hidden transition-all duration-200 ease-out"
+                        style={{
+                          maxHeight: isExpanded ? `${item.children!.length * 40}px` : '0px'
+                        }}
+                      >
+                        {item.children!.map((child) => (
+                          <NavButton
+                            key={child.id}
+                            item={child}
+                            isActive={location.pathname === child.path}
+                            isChild={true}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </nav>
         </ResizablePanel>
