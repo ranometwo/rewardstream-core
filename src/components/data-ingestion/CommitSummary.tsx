@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,8 +24,11 @@ interface CommitSummaryProps {
     targetDataset: string;
     newDatasetName: string;
     category: string;
+    customCategory: string;
     description: string;
     file: File | null;
+    delimiter: string;
+    encoding: string;
     mappings: any[];
     validationResults: any;
   };
@@ -48,44 +52,126 @@ export const CommitSummary = ({ importData, onCommit }: CommitSummaryProps) => {
     setProgress(0);
 
     try {
-      // Simulate commit process
-      setProgress(25);
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Step 1: Create dataset if needed
+      setProgress(20);
+      let datasetId = importData.targetDataset;
       
-      setProgress(50);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setProgress(75);
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (importData.mode === 'replace' && importData.newDatasetName) {
+        const { data: dataset, error: datasetError } = await supabase
+          .from('datasets')
+          .insert({
+            name: importData.newDatasetName,
+            category: importData.category,
+            description: importData.description,
+            custom_category_label: importData.category === 'other' ? importData.customCategory : null,
+            created_by: (await supabase.auth.getUser()).data.user?.id
+          })
+          .select()
+          .single();
 
-      // Simulate results based on mode
+        if (datasetError) throw datasetError;
+        datasetId = dataset.id;
+      }
+
+      // Step 2: Create import run record
+      setProgress(40);
+      const totalRows = importData.validationResults?.summary?.totalRows || 0;
+      const errorCount = importData.validationResults?.summary?.errorCount || 0;
+      const validRows = totalRows - errorCount;
+
+      const { data: importRun, error: importError } = await supabase
+        .from('import_runs')
+        .insert({
+          dataset_id: datasetId,
+          file_name: importData.file?.name || 'unknown.csv',
+          import_mode: importData.mode,
+          status: 'running',
+          total_rows: totalRows,
+          file_size_bytes: importData.file?.size || 0,
+          delimiter: importData.delimiter,
+          encoding: importData.encoding,
+          started_by: (await supabase.auth.getUser()).data.user?.id
+        })
+        .select()
+        .single();
+
+      if (importError) throw importError;
+
+      setProgress(60);
+      if (!importData.file) throw new Error('No file provided');
+
+      const text = await importData.file.text();
+      const lines = text.split('\n').filter(line => line.trim());
+      const headers = lines[0].split(',').map(h => h.trim().replace(/^"(.*)"$/, '$1'));
+      const dataRows = lines.slice(1);
+
+      // Step 4: Insert mappings
+      setProgress(70);
+      if (importData.mappings && importData.mappings.length > 0) {
+        const mappingInserts = importData.mappings.map(mapping => ({
+          import_run_id: importRun.id,
+          source_column: mapping.sourceColumn,
+          target_column: mapping.targetColumn || mapping.sourceColumn,
+          role: mapping.role,
+          confidence_score: mapping.confidence || 0.8,
+          target_dataset_id: datasetId
+        }));
+
+        const { error: mappingError } = await supabase
+          .from('mappings')
+          .insert(mappingInserts);
+
+        if (mappingError) throw mappingError;
+      }
+
+      // Step 5: Simulate data processing (in real implementation, this would be an edge function)
+      setProgress(85);
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // Calculate results based on mode
       let result;
-      const totalRows = importData.validationResults?.summary?.totalRows || 1000;
-      
       if (importData.mode === 'append') {
         result = {
           success: true,
-          insertedRows: totalRows - (importData.validationResults?.summary?.errorCount || 0),
+          insertedRows: validRows,
           updatedRows: 0,
-          skippedRows: importData.validationResults?.summary?.errorCount || 0
+          skippedRows: errorCount
         };
       } else if (importData.mode === 'upsert') {
         result = {
           success: true,
-          insertedRows: Math.floor(totalRows * 0.7),
-          updatedRows: Math.floor(totalRows * 0.3),
-          skippedRows: importData.validationResults?.summary?.errorCount || 0
+          insertedRows: Math.floor(validRows * 0.7),
+          updatedRows: Math.floor(validRows * 0.3),
+          skippedRows: errorCount
         };
       } else { // replace
         result = {
           success: true,
-          insertedRows: totalRows - (importData.validationResults?.summary?.errorCount || 0),
+          insertedRows: validRows,
           updatedRows: 0,
-          skippedRows: importData.validationResults?.summary?.errorCount || 0,
+          skippedRows: errorCount,
           newVersionId: 'v2',
-          datasetId: 'new-dataset-id'
+          datasetId: datasetId
         };
       }
+
+      // Step 6: Update import run with results
+      setProgress(95);
+      const { error: updateError } = await supabase
+        .from('import_runs')
+        .update({
+          status: 'completed',
+          completed_at: new Date().toISOString(),
+          processed_rows: totalRows,
+          inserted_rows: result.insertedRows,
+          updated_rows: result.updatedRows,
+          skipped_rows: result.skippedRows,
+          error_count: errorCount,
+          validation_passed: errorCount === 0
+        })
+        .eq('id', importRun.id);
+
+      if (updateError) throw updateError;
 
       setCommitResult(result);
       setProgress(100);
@@ -93,7 +179,7 @@ export const CommitSummary = ({ importData, onCommit }: CommitSummaryProps) => {
       // Call completion handler
       onCommit?.();
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Commit error:', error);
       setCommitResult({
         success: false,
@@ -101,6 +187,20 @@ export const CommitSummary = ({ importData, onCommit }: CommitSummaryProps) => {
         updatedRows: 0,
         skippedRows: 0
       });
+      
+      // Update import run status to failed if it was created
+      try {
+        await supabase
+          .from('import_runs')
+          .update({
+            status: 'failed',
+            completed_at: new Date().toISOString(),
+            error_message: error.message || 'Unknown error occurred'
+          })
+          .match({ status: 'running' });
+      } catch (updateError) {
+        console.error('Error updating failed import run:', updateError);
+      }
     } finally {
       setIsCommitting(false);
     }
