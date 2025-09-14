@@ -44,9 +44,10 @@ interface ImportRun {
 
 interface DataIngestionHistoryProps {
   onSelectRun?: (run: ImportRun) => void;
+  dataType?: string;
 }
 
-export const DataIngestionHistory = ({ onSelectRun }: DataIngestionHistoryProps) => {
+export const DataIngestionHistory = ({ onSelectRun, dataType }: DataIngestionHistoryProps) => {
   const [runs, setRuns] = useState<ImportRun[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -55,16 +56,29 @@ export const DataIngestionHistory = ({ onSelectRun }: DataIngestionHistoryProps)
 
   useEffect(() => {
     loadImportHistory();
-  }, []);
+  }, [dataType]);
 
   const loadImportHistory = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      let query = supabase
         .from('import_runs')
-        .select('*')
+        .select(`
+          *,
+          datasets!inner(
+            name,
+            category
+          )
+        `)
         .order('started_at', { ascending: false })
         .limit(100);
+
+      // Filter by data type if specified
+      if (dataType && dataType !== 'all') {
+        query = query.eq('datasets.category', dataType);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setRuns(data || []);
@@ -170,75 +184,67 @@ export const DataIngestionHistory = ({ onSelectRun }: DataIngestionHistoryProps)
   }
 
   return (
-    <div className="space-y-6">
-      {/* Stats Overview */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <Card className="p-4">
+    <div className="space-y-4">
+      {/* Compact Stats Bar */}
+      <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+        <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
-            <Database className="w-5 h-5 text-blue-500" />
-            <div>
-              <div className="text-2xl font-bold">{stats.total}</div>
-              <div className="text-sm text-muted-foreground">Total Imports</div>
-            </div>
+            <Database className="w-4 h-4 text-blue-500" />
+            <span className="text-sm font-medium">{stats.total} imports</span>
           </div>
-        </Card>
-        
-        <Card className="p-4">
           <div className="flex items-center gap-2">
-            <CheckCircle className="w-5 h-5 text-green-500" />
-            <div>
-              <div className="text-2xl font-bold">{stats.completed}</div>
-              <div className="text-sm text-muted-foreground">Completed</div>
-            </div>
+            <CheckCircle className="w-4 h-4 text-green-500" />
+            <span className="text-sm">{stats.completed} completed</span>
           </div>
-        </Card>
-
-        <Card className="p-4">
           <div className="flex items-center gap-2">
-            <XCircle className="w-5 h-5 text-red-500" />
-            <div>
-              <div className="text-2xl font-bold">{stats.failed}</div>
-              <div className="text-sm text-muted-foreground">Failed</div>
-            </div>
+            <XCircle className="w-4 h-4 text-red-500" />
+            <span className="text-sm">{stats.failed} failed</span>
           </div>
-        </Card>
-
-        <Card className="p-4">
           <div className="flex items-center gap-2">
-            <RefreshCw className="w-5 h-5 text-blue-500" />
-            <div>
-              <div className="text-2xl font-bold">{stats.running}</div>
-              <div className="text-sm text-muted-foreground">Running</div>
-            </div>
+            <BarChart3 className="w-4 h-4 text-purple-500" />
+            <span className="text-sm">{stats.totalRows.toLocaleString()} rows</span>
           </div>
-        </Card>
-
-        <Card className="p-4">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-purple-500" />
-            <div>
-              <div className="text-2xl font-bold">{stats.totalRows.toLocaleString()}</div>
-              <div className="text-sm text-muted-foreground">Rows Processed</div>
-            </div>
-          </div>
-        </Card>
+        </div>
+        <Button variant="outline" size="default" onClick={loadImportHistory}>
+          <RefreshCw className="w-3 h-3 mr-1" />
+          Refresh
+        </Button>
       </div>
 
-      {/* Filters and Search */}
-      <Card>
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center justify-between">
-            <span className="flex items-center gap-2">
-              <Upload className="w-5 h-5" />
-              Import History
-            </span>
-            <Button variant="outline" size="default" onClick={loadImportHistory}>
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Refresh
-            </Button>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      {/* Compact Filters */}
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search imports..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 h-9"
+          />
+        </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-32 h-9">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="completed">Completed</SelectItem>
+            <SelectItem value="failed">Failed</SelectItem>
+            <SelectItem value="running">Running</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={modeFilter} onValueChange={setModeFilter}>
+          <SelectTrigger className="w-32 h-9">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Modes</SelectItem>
+            <SelectItem value="append">Append</SelectItem>
+            <SelectItem value="upsert">Upsert</SelectItem>
+            <SelectItem value="replace">Replace</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -276,103 +282,85 @@ export const DataIngestionHistory = ({ onSelectRun }: DataIngestionHistoryProps)
             </Select>
           </div>
 
-          {/* Import History Table */}
-          {filteredRuns.length === 0 ? (
-            <div className="text-center py-12">
-              <Upload className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">No Import History</h3>
-              <p className="text-muted-foreground">
-                {runs.length === 0 
-                  ? "No data imports have been performed yet." 
-                  : "No imports match your current filters."}
-              </p>
-            </div>
-          ) : (
-            <div className="border rounded-lg overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-muted/50">
-                    <TableHead className="w-12"></TableHead>
-                    <TableHead>File</TableHead>
-                    <TableHead>Mode</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Started</TableHead>
-                    <TableHead>Duration</TableHead>
-                    <TableHead className="text-right">Rows</TableHead>
-                    <TableHead className="text-right">Size</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredRuns.map((run) => (
-                    <TableRow 
-                      key={run.id}
-                      className="hover:bg-muted/50 cursor-pointer"
-                      onClick={() => onSelectRun?.(run)}
-                    >
-                      <TableCell>{getStatusIcon(run.status)}</TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="font-medium">{run.file_name}</div>
-                          <div className="text-xs text-muted-foreground font-mono">
-                            {run.id.slice(0, 8)}...
-                          </div>
+      {/* Compact Table */}
+      {filteredRuns.length === 0 ? (
+        <div className="text-center py-8">
+          <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+          <p className="text-sm text-muted-foreground">
+            {runs.length === 0 ? "No imports yet" : "No matches found"}
+          </p>
+        </div>
+      ) : (
+        <div className="border rounded-lg overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/30 h-10">
+                <TableHead className="w-8"></TableHead>
+                <TableHead className="text-xs">File & ID</TableHead>
+                <TableHead className="text-xs">Mode</TableHead>
+                <TableHead className="text-xs">Status</TableHead>
+                <TableHead className="text-xs">Started</TableHead>
+                <TableHead className="text-xs">Duration</TableHead>
+                <TableHead className="text-xs text-right">Rows</TableHead>
+                <TableHead className="text-xs text-right">Size</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredRuns.map((run) => (
+                <TableRow 
+                  key={run.id}
+                  className="hover:bg-muted/20 cursor-pointer h-12"
+                  onClick={() => onSelectRun?.(run)}
+                >
+                  <TableCell className="py-2">{getStatusIcon(run.status)}</TableCell>
+                  <TableCell className="py-2">
+                    <div>
+                      <div className="text-sm font-medium truncate max-w-[150px]">{run.file_name}</div>
+                      <div className="text-xs text-muted-foreground font-mono">
+                        {run.id.slice(0, 8)}...
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-2">{getModeBadge(run.import_mode)}</TableCell>
+                  <TableCell className="py-2">{getStatusBadge(run.status)}</TableCell>
+                  <TableCell className="py-2">
+                    <div className="text-xs">
+                      {new Date(run.started_at).toLocaleDateString('en-US', { 
+                        month: 'short', 
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-2">
+                    <div className="text-xs">
+                      {formatDuration(run.started_at, run.completed_at)}
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-2 text-right">
+                    <div className="text-xs">
+                      <div className="font-medium">
+                        {(run.inserted_rows + run.updated_rows).toLocaleString()}
+                      </div>
+                      {run.error_count > 0 && (
+                        <div className="text-red-600">
+                          {run.error_count} errors
                         </div>
-                      </TableCell>
-                      <TableCell>{getModeBadge(run.import_mode)}</TableCell>
-                      <TableCell>{getStatusBadge(run.status)}</TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="text-sm">
-                            {new Date(run.started_at).toLocaleDateString()}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {new Date(run.started_at).toLocaleTimeString()}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm">
-                          {formatDuration(run.started_at, run.completed_at)}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="space-y-1">
-                          <div className="text-sm font-medium">
-                            {(run.inserted_rows + run.updated_rows).toLocaleString()}
-                          </div>
-                          {run.error_count > 0 && (
-                            <div className="text-xs text-red-600">
-                              {run.error_count} errors
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="text-sm">
-                          {formatFileSize(run.file_size_bytes)}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Button 
-                          variant="ghost" 
-                          size="default"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // Handle action
-                          }}
-                        >
-                          <Download className="w-4 h-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-2 text-right">
+                    <div className="text-xs">
+                      {formatFileSize(run.file_size_bytes)}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
     </div>
   );
 };

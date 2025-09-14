@@ -422,7 +422,24 @@ export const ValidationResults = ({ mappings, file, onValidationComplete }: Vali
                   <FileText className="w-4 h-4 mr-2" />
                   Fix Issues & Re-upload
                 </Button>
-                <Button variant="destructive" className="flex-1">
+                <Button 
+                  variant="destructive" 
+                  className="flex-1"
+                  onClick={() => {
+                    // Create results with errors skipped
+                    const validRowCount = results.summary.totalRows - new Set(results.issues.filter(i => i.severity === 'error').map(i => i.row)).size;
+                    const skippedResults = {
+                      passed: true,
+                      issues: results.issues.filter(i => i.severity === 'warning'), // Keep only warnings
+                      summary: {
+                        ...results.summary,
+                        errorCount: 0,
+                        passedRows: validRowCount
+                      }
+                    };
+                    onValidationComplete(skippedResults);
+                  }}
+                >
                   Skip Invalid Rows ({new Set(results.issues.filter(i => i.severity === 'error').map(i => i.row)).size} rows)
                 </Button>
               </div>
