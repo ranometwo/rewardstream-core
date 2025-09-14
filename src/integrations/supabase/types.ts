@@ -14,7 +14,438 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      columns_profiled: {
+        Row: {
+          column_index: number
+          column_name: string
+          confidence_level: string
+          created_at: string
+          distinct_count: number | null
+          id: string
+          import_run_id: string
+          null_percentage: number | null
+          pattern_analysis: Json | null
+          sample_values: Json | null
+          suggested_type: string
+        }
+        Insert: {
+          column_index: number
+          column_name: string
+          confidence_level: string
+          created_at?: string
+          distinct_count?: number | null
+          id?: string
+          import_run_id: string
+          null_percentage?: number | null
+          pattern_analysis?: Json | null
+          sample_values?: Json | null
+          suggested_type: string
+        }
+        Update: {
+          column_index?: number
+          column_name?: string
+          confidence_level?: string
+          created_at?: string
+          distinct_count?: number | null
+          id?: string
+          import_run_id?: string
+          null_percentage?: number | null
+          pattern_analysis?: Json | null
+          sample_values?: Json | null
+          suggested_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "columns_profiled_import_run_id_fkey"
+            columns: ["import_run_id"]
+            isOneToOne: false
+            referencedRelation: "import_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dataset_versions: {
+        Row: {
+          activated_at: string | null
+          created_at: string
+          created_by: string | null
+          dataset_id: string
+          file_size_bytes: number | null
+          id: string
+          is_active: boolean | null
+          row_count: number | null
+          schema_hash: string | null
+          version_number: number
+        }
+        Insert: {
+          activated_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          dataset_id: string
+          file_size_bytes?: number | null
+          id?: string
+          is_active?: boolean | null
+          row_count?: number | null
+          schema_hash?: string | null
+          version_number: number
+        }
+        Update: {
+          activated_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          dataset_id?: string
+          file_size_bytes?: number | null
+          id?: string
+          is_active?: boolean | null
+          row_count?: number | null
+          schema_hash?: string | null
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dataset_versions_dataset_id_fkey"
+            columns: ["dataset_id"]
+            isOneToOne: false
+            referencedRelation: "datasets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      datasets: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          custom_category_label: string | null
+          description: string | null
+          id: string
+          is_archived: boolean | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          created_by?: string | null
+          custom_category_label?: string | null
+          description?: string | null
+          id?: string
+          is_archived?: boolean | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          custom_category_label?: string | null
+          description?: string | null
+          id?: string
+          is_archived?: boolean | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      dq_issues: {
+        Row: {
+          column_name: string
+          created_at: string
+          fix_suggestion: string | null
+          id: string
+          import_run_id: string
+          issue_description: string
+          row_number: number
+          rule_type: string
+          sample_value: string | null
+          severity: string
+        }
+        Insert: {
+          column_name: string
+          created_at?: string
+          fix_suggestion?: string | null
+          id?: string
+          import_run_id: string
+          issue_description: string
+          row_number: number
+          rule_type: string
+          sample_value?: string | null
+          severity: string
+        }
+        Update: {
+          column_name?: string
+          created_at?: string
+          fix_suggestion?: string | null
+          id?: string
+          import_run_id?: string
+          issue_description?: string
+          row_number?: number
+          rule_type?: string
+          sample_value?: string | null
+          severity?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dq_issues_import_run_id_fkey"
+            columns: ["import_run_id"]
+            isOneToOne: false
+            referencedRelation: "import_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      import_runs: {
+        Row: {
+          completed_at: string | null
+          dataset_id: string
+          delimiter: string | null
+          encoding: string | null
+          error_count: number | null
+          error_message: string | null
+          file_name: string
+          file_path: string | null
+          file_size_bytes: number | null
+          header_row: number | null
+          id: string
+          import_mode: string
+          inserted_rows: number | null
+          new_version_id: string | null
+          processed_rows: number | null
+          skipped_rows: number | null
+          started_at: string
+          started_by: string | null
+          status: string
+          target_version_id: string | null
+          total_rows: number | null
+          updated_rows: number | null
+          validation_passed: boolean | null
+        }
+        Insert: {
+          completed_at?: string | null
+          dataset_id: string
+          delimiter?: string | null
+          encoding?: string | null
+          error_count?: number | null
+          error_message?: string | null
+          file_name: string
+          file_path?: string | null
+          file_size_bytes?: number | null
+          header_row?: number | null
+          id?: string
+          import_mode: string
+          inserted_rows?: number | null
+          new_version_id?: string | null
+          processed_rows?: number | null
+          skipped_rows?: number | null
+          started_at?: string
+          started_by?: string | null
+          status?: string
+          target_version_id?: string | null
+          total_rows?: number | null
+          updated_rows?: number | null
+          validation_passed?: boolean | null
+        }
+        Update: {
+          completed_at?: string | null
+          dataset_id?: string
+          delimiter?: string | null
+          encoding?: string | null
+          error_count?: number | null
+          error_message?: string | null
+          file_name?: string
+          file_path?: string | null
+          file_size_bytes?: number | null
+          header_row?: number | null
+          id?: string
+          import_mode?: string
+          inserted_rows?: number | null
+          new_version_id?: string | null
+          processed_rows?: number | null
+          skipped_rows?: number | null
+          started_at?: string
+          started_by?: string | null
+          status?: string
+          target_version_id?: string | null
+          total_rows?: number | null
+          updated_rows?: number | null
+          validation_passed?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_runs_dataset_id_fkey"
+            columns: ["dataset_id"]
+            isOneToOne: false
+            referencedRelation: "datasets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "import_runs_new_version_id_fkey"
+            columns: ["new_version_id"]
+            isOneToOne: false
+            referencedRelation: "dataset_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "import_runs_target_version_id_fkey"
+            columns: ["target_version_id"]
+            isOneToOne: false
+            referencedRelation: "dataset_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mappings: {
+        Row: {
+          confidence_score: number | null
+          coverage_percentage: number | null
+          created_at: string
+          id: string
+          import_run_id: string
+          is_manual_override: boolean | null
+          role: string
+          source_column: string
+          target_column: string | null
+          target_dataset_id: string | null
+          transforms: Json | null
+        }
+        Insert: {
+          confidence_score?: number | null
+          coverage_percentage?: number | null
+          created_at?: string
+          id?: string
+          import_run_id: string
+          is_manual_override?: boolean | null
+          role: string
+          source_column: string
+          target_column?: string | null
+          target_dataset_id?: string | null
+          transforms?: Json | null
+        }
+        Update: {
+          confidence_score?: number | null
+          coverage_percentage?: number | null
+          created_at?: string
+          id?: string
+          import_run_id?: string
+          is_manual_override?: boolean | null
+          role?: string
+          source_column?: string
+          target_column?: string | null
+          target_dataset_id?: string | null
+          transforms?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mappings_import_run_id_fkey"
+            columns: ["import_run_id"]
+            isOneToOne: false
+            referencedRelation: "import_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mappings_target_dataset_id_fkey"
+            columns: ["target_dataset_id"]
+            isOneToOne: false
+            referencedRelation: "datasets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      relations: {
+        Row: {
+          cardinality: string | null
+          coverage_percentage: number | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          source_column: string
+          source_dataset_id: string
+          target_column: string
+          target_dataset_id: string
+        }
+        Insert: {
+          cardinality?: string | null
+          coverage_percentage?: number | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          source_column: string
+          source_dataset_id: string
+          target_column: string
+          target_dataset_id: string
+        }
+        Update: {
+          cardinality?: string | null
+          coverage_percentage?: number | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          source_column?: string
+          source_dataset_id?: string
+          target_column?: string
+          target_dataset_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "relations_source_dataset_id_fkey"
+            columns: ["source_dataset_id"]
+            isOneToOne: false
+            referencedRelation: "datasets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "relations_target_dataset_id_fkey"
+            columns: ["target_dataset_id"]
+            isOneToOne: false
+            referencedRelation: "datasets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      validation_rules: {
+        Row: {
+          column_name: string
+          created_at: string
+          created_by: string | null
+          dataset_id: string
+          id: string
+          is_enabled: boolean | null
+          rule_config: Json
+          rule_type: string
+          severity: string
+        }
+        Insert: {
+          column_name: string
+          created_at?: string
+          created_by?: string | null
+          dataset_id: string
+          id?: string
+          is_enabled?: boolean | null
+          rule_config: Json
+          rule_type: string
+          severity?: string
+        }
+        Update: {
+          column_name?: string
+          created_at?: string
+          created_by?: string | null
+          dataset_id?: string
+          id?: string
+          is_enabled?: boolean | null
+          rule_config?: Json
+          rule_type?: string
+          severity?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "validation_rules_dataset_id_fkey"
+            columns: ["dataset_id"]
+            isOneToOne: false
+            referencedRelation: "datasets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
