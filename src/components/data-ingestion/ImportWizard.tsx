@@ -53,7 +53,7 @@ export const ImportWizard = ({ onComplete }: ImportWizardProps) => {
         if (importData.mode === 'append' || importData.mode === 'upsert') {
           return importData.targetDataset !== '';
         }
-        return importData.newDatasetName !== '' && importData.category !== '' && importData.category.length > 0;
+        return importData.newDatasetName !== '' && importData.category && importData.category.length > 0;
       case 1: // Upload
         return importData.file !== null;
       case 2: // Preview

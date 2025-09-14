@@ -215,10 +215,10 @@ export const CommitSummary = ({ importData, onCommit }: CommitSummaryProps) => {
                       <div className="text-2xl font-bold text-yellow-600">
                         {commitResult.skippedRows.toLocaleString()}
                       </div>
-                      <div className="text-sm text-muted-foreground">Skipped</div>
-                    </div>
-                  </div>
-                </div>
+                       <div className="text-sm text-muted-foreground">Skipped</div>
+                     </div>
+                   </div>
+                 </CardContent>
               </Card>
             )}
           </div>
