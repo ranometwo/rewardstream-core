@@ -89,7 +89,7 @@ const DataSettings = () => {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button size="sm" className="flex-1">
+                  <Button size="default" className="flex-1">
                     <TestTube className="h-4 w-4 mr-2" />
                     Test Connection
                   </Button>

@@ -87,7 +87,7 @@ const AnalyticsLanding: React.FC = () => {
                   <Link to={card.path}>
                     <Button 
                       variant="ghost" 
-                      size="sm"
+                      size="default"
                       className="group-hover:bg-accent group-hover:text-accent-foreground"
                     >
                       View Reports

@@ -64,7 +64,7 @@ const DataIngestion = () => {
                   <Upload className="h-12 w-12 text-muted-foreground/50 mb-4" />
                   <p className="text-sm font-medium mb-2">Drop CSV or Excel files here</p>
                   <p className="text-xs text-muted-foreground mb-4">Max file size: 100MB</p>
-                  <Button size="sm">
+                  <Button size="default">
                     <FileSpreadsheet className="h-4 w-4 mr-2" />
                     Browse Files
                   </Button>
@@ -76,7 +76,7 @@ const DataIngestion = () => {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">Upload History</CardTitle>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="default">
                     <Download className="h-4 w-4 mr-2" />
                     Sample Files
                   </Button>
@@ -96,7 +96,7 @@ const DataIngestion = () => {
                         <Badge variant="secondary" className="text-xs">
                           {file.status}
                         </Badge>
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="default">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>

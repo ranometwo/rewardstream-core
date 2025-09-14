@@ -120,7 +120,7 @@ const SchemeReportsDashboard = ({ selectedScheme }: SchemeReportsDashboardProps)
             </div>
             <Button 
               variant="outline" 
-              size="sm"
+               size="default"
               onClick={toggleFilters}
               className="flex items-center gap-2"
             >
@@ -436,7 +436,7 @@ const SchemeReportsDashboard = ({ selectedScheme }: SchemeReportsDashboardProps)
             </h3>
             <Button
               variant="ghost"
-              size="sm"
+               size="default"
               onClick={closeFilters}
               className="h-8 w-8 p-0"
             >
@@ -603,10 +603,10 @@ const SchemeReportsDashboard = ({ selectedScheme }: SchemeReportsDashboardProps)
 
           {/* Filter Actions */}
           <div className="pt-4 border-t border-border space-y-3">
-            <Button variant="outline" size="sm" className="w-full">
+            <Button variant="outline" size="default" className="w-full">
               Clear All Filters
             </Button>
-            <Button size="sm" className="w-full">
+            <Button size="default" className="w-full">
               Apply Filters
             </Button>
           </div>

@@ -92,7 +92,7 @@ const ReportingDashboard = () => {
             <div className="flex gap-2">
               <Button 
                 variant="outline" 
-                size="sm"
+                size="default"
                 onClick={toggleFilters}
                 className="flex items-center gap-2"
               >
@@ -358,7 +358,7 @@ const ReportingDashboard = () => {
             </h3>
             <Button
               variant="ghost"
-              size="sm"
+              size="default"
               onClick={toggleFilters}
             >
               <PanelLeftClose className="w-4 h-4" />

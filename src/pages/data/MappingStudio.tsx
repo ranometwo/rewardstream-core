@@ -99,11 +99,11 @@ const MappingStudio = () => {
               </div>
 
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="default">
                   <RotateCcw className="h-4 w-4 mr-2" />
                   Reset All
                 </Button>
-                <Button size="sm">
+                <Button size="default">
                   <Check className="h-4 w-4 mr-2" />
                   Confirm Mappings
                 </Button>
@@ -151,9 +151,9 @@ const MappingStudio = () => {
                   </svg>
                   
                   <div className="absolute bottom-4 right-4 flex gap-2">
-                    <Button variant="outline" size="sm">Zoom In</Button>
-                    <Button variant="outline" size="sm">Zoom Out</Button>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="default">Zoom In</Button>
+                    <Button variant="outline" size="default">Zoom Out</Button>
+                    <Button variant="outline" size="default">
                       <Eye className="h-4 w-4" />
                     </Button>
                   </div>
@@ -168,7 +168,7 @@ const MappingStudio = () => {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">Discovered Relationships</CardTitle>
-                  <Button size="sm">
+                  <Button size="default">
                     <Plus className="h-4 w-4 mr-2" />
                     Add Manual
                   </Button>
@@ -192,11 +192,11 @@ const MappingStudio = () => {
                       </div>
                       
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline" className="text-xs h-7">
+                        <Button size="default" variant="outline" className="text-xs h-7">
                           <Check className="h-3 w-3 mr-1" />
                           Accept
                         </Button>
-                        <Button size="sm" variant="outline" className="text-xs h-7">
+                        <Button size="default" variant="outline" className="text-xs h-7">
                           Edit
                         </Button>
                       </div>
@@ -205,7 +205,7 @@ const MappingStudio = () => {
                 </div>
 
                 <div className="mt-4 pt-4 border-t">
-                  <Button className="w-full" size="sm">
+                  <Button className="w-full" size="default">
                     Accept All High Confidence (3)
                   </Button>
                 </div>

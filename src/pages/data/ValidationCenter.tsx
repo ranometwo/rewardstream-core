@@ -169,11 +169,11 @@ const ValidationCenter = () => {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1">
+                  <Button variant="outline" size="default" className="flex-1">
                     <TestTube className="h-4 w-4 mr-2" />
                     Test Rule
                   </Button>
-                  <Button size="sm" className="flex-1">
+                  <Button size="default" className="flex-1">
                     <Save className="h-4 w-4 mr-2" />
                     Save Rule
                   </Button>
@@ -182,7 +182,7 @@ const ValidationCenter = () => {
                 <div className="border-t pt-4">
                   <div className="flex items-center justify-between mb-3">
                     <Label className="text-sm font-medium">Active Rules</Label>
-                    <Button size="sm" variant="outline">
+                    <Button size="default" variant="outline">
                       <Plus className="h-4 w-4" />
                     </Button>
                   </div>
@@ -195,7 +195,7 @@ const ValidationCenter = () => {
                         </div>
                         <div className="flex items-center gap-1">
                           <Switch checked={rule.active} />
-                          <Button variant="ghost" size="sm">
+                          <Button variant="ghost" size="default">
                             <Edit className="h-3 w-3" />
                           </Button>
                         </div>
@@ -254,8 +254,8 @@ const ValidationCenter = () => {
                           <div className="text-muted-foreground">{result.expected}</div>
                           <div>{result.rule}</div>
                           <div className="flex gap-1">
-                            <Button size="sm" variant="outline" className="h-6 text-xs">Fix</Button>
-                            <Button size="sm" variant="outline" className="h-6 text-xs">Ignore</Button>
+                            <Button size="default" variant="outline" className="h-6 text-xs">Fix</Button>
+                            <Button size="default" variant="outline" className="h-6 text-xs">Ignore</Button>
                           </div>
                         </div>
                       ))}
@@ -263,9 +263,9 @@ const ValidationCenter = () => {
                   </div>
 
                   <div className="flex gap-2">
-                    <Button size="sm" variant="outline">Fix All</Button>
-                    <Button size="sm" variant="outline">Ignore All</Button>
-                    <Button size="sm" variant="outline">Export Issues</Button>
+                    <Button size="default" variant="outline">Fix All</Button>
+                    <Button size="default" variant="outline">Ignore All</Button>
+                    <Button size="default" variant="outline">Export Issues</Button>
                   </div>
                 </div>
               </CardContent>
@@ -278,7 +278,7 @@ const ValidationCenter = () => {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">Quarantine Manager</CardTitle>
-                  <Button size="sm" variant="outline">
+                  <Button size="default" variant="outline">
                     <Trash2 className="h-4 w-4 mr-2" />
                     Clear All
                   </Button>
@@ -312,14 +312,14 @@ const ValidationCenter = () => {
                       </div>
                       
                       <div className="flex gap-1">
-                        <Button size="sm" variant="outline" className="text-xs h-6">
+                        <Button size="default" variant="outline" className="text-xs h-6">
                           <Edit className="h-3 w-3 mr-1" />
                           Edit
                         </Button>
-                        <Button size="sm" variant="outline" className="text-xs h-6">
+                        <Button size="default" variant="outline" className="text-xs h-6">
                           Retry
                         </Button>
-                        <Button size="sm" variant="outline" className="text-xs h-6">
+                        <Button size="default" variant="outline" className="text-xs h-6">
                           <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
@@ -328,7 +328,7 @@ const ValidationCenter = () => {
                 </div>
 
                 <div className="mt-4 pt-4 border-t">
-                  <Button className="w-full" size="sm">
+                  <Button className="w-full" size="default">
                     Export to CSV
                   </Button>
                 </div>

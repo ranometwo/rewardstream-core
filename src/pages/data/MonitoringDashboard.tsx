@@ -267,7 +267,7 @@ const MonitoringDashboard = () => {
                       <span className="text-sm">Auto-scroll</span>
                       <Switch defaultChecked />
                     </div>
-                    <Button size="sm" variant="outline">
+                    <Button size="default" variant="outline">
                       <Download className="h-4 w-4 mr-2" />
                       Export
                     </Button>
