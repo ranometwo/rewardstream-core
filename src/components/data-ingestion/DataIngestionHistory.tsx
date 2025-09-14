@@ -170,7 +170,7 @@ export const DataIngestionHistory = ({ onSelectRun, dataType }: DataIngestionHis
     total: runs.length,
     completed: runs.filter(r => r.status === 'completed').length,
     failed: runs.filter(r => r.status === 'failed').length,
-    running: runs.filter(r => r.status === 'running').length,
+    running: runs.filter(r => r.status === 'processing').length,
     totalRows: runs.reduce((sum, r) => sum + (r.inserted_rows || 0), 0)
   };
 

@@ -85,7 +85,7 @@ export const CommitSummary = ({ importData, onCommit }: CommitSummaryProps) => {
           dataset_id: datasetId,
           file_name: importData.file?.name || 'unknown.csv',
           import_mode: importData.mode,
-          status: 'running',
+          status: 'processing',
           total_rows: totalRows,
           file_size_bytes: importData.file?.size || 0,
           delimiter: importData.delimiter,
@@ -197,7 +197,7 @@ export const CommitSummary = ({ importData, onCommit }: CommitSummaryProps) => {
             completed_at: new Date().toISOString(),
             error_message: error.message || 'Unknown error occurred'
           })
-          .match({ status: 'running' });
+          .match({ status: 'processing' });
       } catch (updateError) {
         console.error('Error updating failed import run:', updateError);
       }
