@@ -84,8 +84,8 @@ export const ImportWizard = ({ onComplete }: ImportWizardProps) => {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-6xl">
-      {/* Progress Steps */}
+    <div className="container mx-auto p-6">
+      {/* Progress Steps max-w-6xl */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
           {steps.map((step, index) => {
