@@ -43,9 +43,7 @@ const SIDEBAR_CONFIG = {
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [sidebarWidth, setSidebarWidth] = useState<number>(SIDEBAR_CONFIG.EXPANDED_WIDTH);
-  const [expandedSections, setExpandedSections] = useState<ExpandedSections>({
-    analytics: true // Auto-expand analytics by default
-  });
+  const [expandedSections, setExpandedSections] = useState<ExpandedSections>({});
   const panelGroupRef = useRef<any>(null);
   const location = useLocation();
 
@@ -128,13 +126,20 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     }));
   }, []);
 
-  // Auto-expand section when navigating to a sub-route
+  // Auto-expand section when navigating to a sub-route but only if not explicitly collapsed by user
   React.useEffect(() => {
     const currentPath = location.pathname;
-    if (currentPath.startsWith('/analytics') && !expandedSections.analytics) {
-      setExpandedSections(prev => ({ ...prev, analytics: true }));
-    }
-  }, [location.pathname, expandedSections.analytics]);
+    
+    // Check if current path matches any nested route and auto-expand parent if not explicitly set
+    navigationItems.forEach(item => {
+      if (item.children) {
+        const hasActiveChild = item.children.some(child => child.path === currentPath);
+        if (hasActiveChild && expandedSections[item.id] === undefined) {
+          setExpandedSections(prev => ({ ...prev, [item.id]: true }));
+        }
+      }
+    });
+  }, [location.pathname, navigationItems]);
 
   const isItemActive = useCallback((item: NavigationItem): boolean => {
     if (item.children) {
@@ -153,12 +158,12 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const hasChildren = item.children && item.children.length > 0;
     const isExpanded = hasChildren && expandedSections[item.id];
 
-    const handleToggleClick = (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (onToggle) {
+    const handleClick = (e: React.MouseEvent) => {
+      if (hasChildren && onToggle) {
+        e.preventDefault();
         onToggle();
       }
+      // If no children or no toggle handler, let the Link handle navigation
     };
 
     const buttonContent = (
@@ -170,6 +175,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           isChild && "ml-4 text-sm",
           hasChildren && "justify-between"
         )}
+        onClick={handleClick}
       >
         <div className={cn("flex items-center", iconSpacing === 'justify-center' ? 'justify-center' : '')}>
           <item.icon className={`h-4 w-4 flex-shrink-0 ${iconMargin}`} />
@@ -189,20 +195,21 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           )}
         </div>
         {hasChildren && showText && (
-          <button
-            onClick={handleToggleClick}
-            className="flex-shrink-0 ml-2 p-1 rounded hover:bg-accent/50 transition-colors"
-            aria-label={isExpanded ? "Collapse section" : "Expand section"}
-          >
+          <div className="flex-shrink-0 ml-2 p-1">
             {isExpanded ? (
               <ChevronDown className="h-3 w-3 transition-transform duration-200" />
             ) : (
               <ChevronRight className="h-3 w-3 transition-transform duration-200" />
             )}
-          </button>
+          </div>
         )}
       </Button>
     );
+
+    // For items with children, don't navigate on click, just toggle
+    if (hasChildren) {
+      return buttonContent;
+    }
 
     return (
       <Link to={item.path}>
@@ -256,8 +263,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           maxSize={SIDEBAR_CONFIG.MAX_SIZE}
           className="border-r border-border bg-card/30 backdrop-blur-sm"
         >
-          <nav className="h-full">
-            <div className="space-y-2 pt-4 px-2">
+          <nav className="h-full overflow-y-auto">
+            <div className="space-y-2 pt-4 px-2 pb-4">
               {navigationItems.map((item) => {
                 const isActive = isItemActive(item);
                 const hasChildren = item.children && item.children.length > 0;
@@ -272,7 +279,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     />
                     {hasChildren && isExpanded && showText && (
                       <div 
-                        className="mt-1 space-y-1 overflow-hidden transition-all duration-200 ease-out"
+                        className="mt-1 space-y-1 overflow-hidden transition-all duration-300 ease-out"
                         style={{
                           maxHeight: isExpanded ? `${item.children!.length * 40}px` : '0px'
                         }}
