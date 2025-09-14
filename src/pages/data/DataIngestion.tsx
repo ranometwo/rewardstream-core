@@ -5,9 +5,11 @@ import { Upload, FileSpreadsheet, Download, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 const DataIngestion = () => {
-    return (
-      <div></div>,
-    );
+  return (
+    <Layout>
+      <div></div>
+    </Layout>
+  );
 };
 
 export default DataIngestion;
