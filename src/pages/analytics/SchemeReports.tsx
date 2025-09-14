@@ -38,67 +38,59 @@ const SchemeReports: React.FC = () => {
   return (
     <Layout>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-4">
-          <div className="h-12 w-12 rounded-lg bg-gradient-primary flex items-center justify-center">
-            <BarChart3 className="h-6 w-6 text-primary-foreground" />
+        {/* Compact Header with Integrated Scheme Selector */}
+        <div className="flex items-center justify-between gap-4 pb-2">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-lg bg-gradient-primary flex items-center justify-center">
+              <BarChart3 className="h-4 w-4 text-primary-foreground" />
+            </div>
+            <div className="flex-1">
+              <h1 className="text-2xl font-bold text-foreground">Scheme Reports</h1>
+              <p className="text-sm text-muted-foreground">Performance analytics for slab-based loyalty schemes</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Scheme Reports</h1>
-            <p className="text-muted-foreground">Performance analytics for slab-based loyalty schemes</p>
+          
+          <div className="flex items-center gap-4 min-w-0 flex-1 max-w-2xl">
+            <div className="flex-1">
+              <Select value={selectedScheme} onValueChange={setSelectedScheme}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a scheme to analyze" />
+                </SelectTrigger>
+                <SelectContent>
+                  {schemes.map((scheme) => (
+                    <SelectItem key={scheme.value} value={scheme.value}>
+                      <div className="flex items-center justify-between w-full">
+                        <span>{scheme.label}</span>
+                        <div className="flex items-center gap-2 ml-4">
+                          <Badge className={`text-xs ${getStatusColor(scheme.status)}`}>
+                            {scheme.status}
+                          </Badge>
+                          {scheme.users > 0 && (
+                            <span className="text-xs text-muted-foreground">
+                              {scheme.users.toLocaleString()} users
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {selectedSchemeData && (
+              <div className="flex items-center gap-3 text-sm">
+                <Badge className={`${getStatusColor(selectedSchemeData.status)}`}>
+                  {selectedSchemeData.status}
+                </Badge>
+                <span className="text-muted-foreground">
+                  {selectedSchemeData.users.toLocaleString()} participants
+                </span>
+                <span className="text-success font-medium">• 33% uplift</span>
+              </div>
+            )}
           </div>
         </div>
-
-        {/* Scheme Selector */}
-        <Card className="border-border shadow-enterprise">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg text-foreground flex items-center gap-2">
-              <Calendar className="w-5 h-5" />
-              Select Scheme
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-4">
-              <div className="flex-1">
-                <Select value={selectedScheme} onValueChange={setSelectedScheme}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a scheme to analyze" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {schemes.map((scheme) => (
-                      <SelectItem key={scheme.value} value={scheme.value}>
-                        <div className="flex items-center justify-between w-full">
-                          <span>{scheme.label}</span>
-                          <div className="flex items-center gap-2 ml-4">
-                            <Badge className={`text-xs ${getStatusColor(scheme.status)}`}>
-                              {scheme.status}
-                            </Badge>
-                            {scheme.users > 0 && (
-                              <span className="text-xs text-muted-foreground">
-                                {scheme.users.toLocaleString()} users
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              {selectedSchemeData && (
-                <div className="flex items-center gap-3">
-                  <Badge className={`${getStatusColor(selectedSchemeData.status)}`}>
-                    {selectedSchemeData.status}
-                  </Badge>
-                  <span className="text-sm text-muted-foreground">
-                    {selectedSchemeData.users.toLocaleString()} participants
-                  </span>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Reports Dashboard */}
         <SchemeReportsDashboard selectedScheme={selectedScheme} />

@@ -111,125 +111,177 @@ const SchemeReportsDashboard = ({ selectedScheme }: SchemeReportsDashboardProps)
         "transition-all duration-300 ease-out",
         filtersOpen ? "mr-80" : "mr-0"
       )}>
-        <div className="space-y-4">
-          {/* Header */}
+        <div className="space-y-3">
+          {/* Compact Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold text-foreground">Dashboard Analytics</h2>
-              <p className="text-muted-foreground">Performance metrics for {selectedScheme}</p>
+              <h2 className="text-xl font-bold text-foreground">Dashboard Analytics</h2>
+              <p className="text-sm text-muted-foreground">Performance metrics for {selectedScheme}</p>
             </div>
-            <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={toggleFilters}
-                className="flex items-center gap-2"
-              >
-                <Filter className="w-4 h-4" />
-                Filters
-              </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={toggleFilters}
+              className="flex items-center gap-2"
+            >
+              <Filter className="w-4 h-4" />
+              Filters
+            </Button>
+          </div>
+
+          {/* Enhanced KPI Metrics - 6 Column Layout */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div className="text-center p-3 bg-gradient-secondary rounded-lg">
+              <div className="text-lg font-bold text-foreground">{campaignImpact.targetUsers}</div>
+              <div className="text-xs font-medium text-muted-foreground">Target Users</div>
+              <div className="text-xs text-success">vs 130 last month</div>
+            </div>
+            <div className="text-center p-3 bg-gradient-secondary rounded-lg">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <span className="text-lg font-bold text-foreground">{campaignImpact.usersUplifted}</span>
+                <Badge className="bg-gradient-success text-success-foreground text-xs">
+                  +{campaignImpact.upliftPercentage}%
+                </Badge>
+              </div>
+              <div className="text-xs font-medium text-muted-foreground">Users Uplifted</div>
+              <div className="text-xs text-success">+12% vs target</div>
+            </div>
+            <div className="text-center p-3 bg-gradient-secondary rounded-lg">
+              <div className="text-lg font-bold text-foreground">245%</div>
+              <div className="text-xs font-medium text-muted-foreground">ROI</div>
+              <div className="text-xs text-success">↗ +15% vs Q3</div>
+            </div>
+            <div className="text-center p-3 bg-gradient-secondary rounded-lg">
+              <div className="text-lg font-bold text-foreground">₹125</div>
+              <div className="text-xs font-medium text-muted-foreground">Cost per User</div>
+              <div className="text-xs text-warning">↘ -8% optimized</div>
+            </div>
+            <div className="text-center p-3 bg-gradient-secondary rounded-lg">
+              <div className="text-lg font-bold text-foreground">₹2.4M</div>
+              <div className="text-xs font-medium text-muted-foreground">Revenue Impact</div>
+              <div className="text-xs text-success">+18% vs target</div>
+            </div>
+            <div className="text-center p-3 bg-gradient-secondary rounded-lg">
+              <div className="text-lg font-bold text-foreground">15.2%</div>
+              <div className="text-xs font-medium text-muted-foreground">Conversion Rate</div>
+              <div className="text-xs text-success">+2.1% uplift</div>
             </div>
           </div>
 
-          {/* Campaign Impact Section */}
-          <Card className="border-border shadow-enterprise">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-foreground text-lg flex items-center gap-2">
-                <Users className="w-5 h-5" />
-                Campaign Impact (All Slabs Inclusive)
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="text-center p-3 bg-gradient-secondary rounded-lg">
-                  <div className="text-xl font-bold text-foreground">{campaignImpact.targetUsers}</div>
-                  <div className="text-xs font-medium text-muted-foreground">Target Users</div>
-                </div>
-                <div className="text-center p-3 bg-gradient-secondary rounded-lg">
-                  <div className="flex items-center justify-center gap-1 mb-1">
-                    <span className="text-xl font-bold text-foreground">{campaignImpact.usersUplifted}</span>
-                    <Badge className="bg-gradient-success text-success-foreground text-xs">
-                      +{campaignImpact.upliftPercentage}%
-                    </Badge>
-                  </div>
-                  <div className="text-xs font-medium text-muted-foreground">Users Uplifted</div>
-                </div>
-                <div className="text-center p-3 bg-gradient-secondary rounded-lg">
-                  <div className="flex items-center justify-center gap-1 mb-1">
-                    <span className="text-lg font-bold text-foreground">
-                      {campaignImpact.avgVolUplift.before}L→{campaignImpact.avgVolUplift.after}L
-                    </span>
-                    <Badge className="bg-gradient-success text-success-foreground text-xs">
-                      +{campaignImpact.avgVolUplift.percentage}%
-                    </Badge>
-                  </div>
-                  <div className="text-xs font-medium text-muted-foreground">Avg Vol Uplift per User</div>
-                </div>
-                <div className="text-center p-3 bg-gradient-secondary rounded-lg">
-                  <div className="text-xl font-bold text-foreground">{campaignImpact.totalVolUplift}L</div>
-                  <div className="text-xs font-medium text-muted-foreground">Total Vol Uplift</div>
-                </div>
+          {/* Additional KPI Row */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div className="text-center p-3 bg-gradient-secondary rounded-lg">
+              <div className="text-lg font-bold text-foreground">8.7/10</div>
+              <div className="text-xs font-medium text-muted-foreground">Engagement Score</div>
+              <div className="text-xs text-success">+0.4 vs baseline</div>
+            </div>
+            <div className="text-center p-3 bg-gradient-secondary rounded-lg">
+              <div className="text-lg font-bold text-foreground">3.2 days</div>
+              <div className="text-xs font-medium text-muted-foreground">Time to Value</div>
+              <div className="text-xs text-success">-1.3 days faster</div>
+            </div>
+            <div className="text-center p-3 bg-gradient-secondary rounded-lg">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <span className="text-sm font-bold text-foreground">
+                  {campaignImpact.avgVolUplift.before}L→{campaignImpact.avgVolUplift.after}L
+                </span>
+                <Badge className="bg-gradient-success text-success-foreground text-xs">
+                  +{campaignImpact.avgVolUplift.percentage}%
+                </Badge>
               </div>
-            </CardContent>
-          </Card>
+              <div className="text-xs font-medium text-muted-foreground">Avg Vol Uplift</div>
+              <div className="text-xs text-success">Above benchmark</div>
+            </div>
+            <div className="text-center p-3 bg-gradient-secondary rounded-lg">
+              <div className="text-lg font-bold text-foreground">{campaignImpact.totalVolUplift}L</div>
+              <div className="text-xs font-medium text-muted-foreground">Total Vol Uplift</div>
+              <div className="text-xs text-success">+23% vs plan</div>
+            </div>
+            <div className="text-center p-3 bg-gradient-secondary rounded-lg">
+              <div className="text-lg font-bold text-foreground">87%</div>
+              <div className="text-xs font-medium text-muted-foreground">Retention Rate</div>
+              <div className="text-xs text-success">+5% vs control</div>
+            </div>
+            <div className="text-center p-3 bg-gradient-secondary rounded-lg">
+              <div className="text-lg font-bold text-foreground">42 days</div>
+              <div className="text-xs font-medium text-muted-foreground">Avg Cycle Time</div>
+              <div className="text-xs text-warning">-3 days vs Q3</div>
+            </div>
+          </div>
 
-          {/* Slab Wise Upliftment */}
+          {/* Compact Slab Wise Upliftment Table */}
           <Card className="border-border shadow-enterprise">
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-2">
               <CardTitle className="text-foreground text-lg">Slab Wise Upliftment</CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="space-y-4">
-                {slabWiseData.map((slab, index) => (
-                  <div key={index} className="flex items-center gap-4 p-4 bg-gradient-secondary rounded-lg">
-                    <div className="flex-1">
-                      <div className="font-medium text-foreground">{slab.slab}</div>
-                    </div>
-                    <div className="grid grid-cols-4 gap-6 flex-3">
-                      <div className="text-center">
-                        <div className="text-lg font-bold text-foreground">{slab.targetUsers}</div>
-                        <div className="text-xs text-muted-foreground">Target Users</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <span className="text-lg font-bold text-foreground">{slab.usersUplifted}</span>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="text-left text-sm font-medium text-muted-foreground py-2">Slab Range</th>
+                      <th className="text-center text-sm font-medium text-muted-foreground py-2">Target Users</th>
+                      <th className="text-center text-sm font-medium text-muted-foreground py-2">Users Uplifted</th>
+                      <th className="text-center text-sm font-medium text-muted-foreground py-2">Uplift %</th>
+                      <th className="text-center text-sm font-medium text-muted-foreground py-2">Avg Vol Uplift</th>
+                      <th className="text-center text-sm font-medium text-muted-foreground py-2">Total Vol Uplift</th>
+                      <th className="text-center text-sm font-medium text-muted-foreground py-2">Trend</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {slabWiseData.map((slab, index) => (
+                      <tr key={index} className="border-b border-border/50 hover:bg-gradient-secondary/50 transition-colors">
+                        <td className="py-3">
+                          <div className="font-medium text-foreground text-sm">{slab.slab}</div>
+                        </td>
+                        <td className="text-center py-3">
+                          <div className="text-sm font-bold text-foreground">{slab.targetUsers}</div>
+                        </td>
+                        <td className="text-center py-3">
+                          <div className="flex items-center justify-center gap-1">
+                            <span className="text-sm font-bold text-foreground">{slab.usersUplifted}</span>
+                          </div>
+                        </td>
+                        <td className="text-center py-3">
                           <Badge className="bg-gradient-success text-success-foreground text-xs">
                             +{slab.upliftPercent}%
                           </Badge>
-                        </div>
-                        <div className="text-xs text-muted-foreground">Users Uplifted</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-lg font-bold text-foreground">+{slab.avgVolUplift}L</div>
-                        <div className="text-xs text-muted-foreground">Avg Vol Uplift</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-lg font-bold text-foreground">{slab.totalVolUplift}L</div>
-                        <div className="text-xs text-muted-foreground">Total Vol Uplift</div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                        </td>
+                        <td className="text-center py-3">
+                          <div className="text-sm font-bold text-foreground">+{slab.avgVolUplift}L</div>
+                        </td>
+                        <td className="text-center py-3">
+                          <div className="text-sm font-bold text-foreground">{slab.totalVolUplift}L</div>
+                        </td>
+                        <td className="text-center py-3">
+                          <div className="text-success text-sm">
+                            {index === 0 ? '↗ +5%' : index === 1 ? '↗ +8%' : '↗ +12%'}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </CardContent>
           </Card>
 
-          {/* Product Mix Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Compact Product Mix Charts */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             <Card className="border-border shadow-enterprise">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-foreground text-lg">Product Mix - Before</CardTitle>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-foreground text-base">Product Mix - Before</CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="w-full h-[250px]">
+                <div className="w-full h-[200px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
                         data={productMixBefore}
                         cx="50%"
                         cy="50%"
-                        innerRadius={60}
-                        outerRadius={100}
+                        innerRadius={50}
+                        outerRadius={80}
                         dataKey="value"
                         animationBegin={0}
                         animationDuration={300}
@@ -247,19 +299,19 @@ const SchemeReportsDashboard = ({ selectedScheme }: SchemeReportsDashboardProps)
             </Card>
 
             <Card className="border-border shadow-enterprise">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-foreground text-lg">Product Mix - After</CardTitle>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-foreground text-base">Product Mix - After</CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="w-full h-[250px]">
+                <div className="w-full h-[200px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
                         data={productMixAfter}
                         cx="50%"
                         cy="50%"
-                        innerRadius={60}
-                        outerRadius={100}
+                        innerRadius={50}
+                        outerRadius={80}
                         dataKey="value"
                         animationBegin={0}
                         animationDuration={300}
@@ -277,19 +329,19 @@ const SchemeReportsDashboard = ({ selectedScheme }: SchemeReportsDashboardProps)
             </Card>
           </div>
 
-          {/* Slab Change Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Compact Slab Change Charts - Vertical Stacked */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             <Card className="border-border shadow-enterprise">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-foreground text-lg">Slab Change - User Uplift Progression</CardTitle>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-foreground text-base">Slab Change - User Uplift Progression</CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="w-full h-[300px]">
+                <div className="w-full h-[250px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={slabProgressionData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" />
-                      <YAxis stroke="hsl(var(--muted-foreground))" />
+                      <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                      <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
                       <Tooltip />
                       <Legend />
                       <Bar dataKey="slabA" stackId="a" fill="#8B5CF6" name="Slab A" animationDuration={300} />
@@ -303,16 +355,16 @@ const SchemeReportsDashboard = ({ selectedScheme }: SchemeReportsDashboardProps)
             </Card>
 
             <Card className="border-border shadow-enterprise">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-foreground text-lg">Slab Change - Volume Uplift Progression</CardTitle>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-foreground text-base">Slab Change - Volume Uplift Progression</CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="w-full h-[300px]">
+                <div className="w-full h-[250px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={volumeProgressionData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" />
-                      <YAxis stroke="hsl(var(--muted-foreground))" />
+                      <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                      <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
                       <Tooltip />
                       <Legend />
                       <Bar dataKey="slabA" stackId="a" fill="#8B5CF6" name="Slab A" animationDuration={300} />
@@ -326,29 +378,31 @@ const SchemeReportsDashboard = ({ selectedScheme }: SchemeReportsDashboardProps)
             </Card>
           </div>
 
-          {/* Net Business Impact */}
+          {/* Compact Net Business Impact */}
           <Card className="border-border shadow-enterprise">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-foreground text-lg">Net Business Impact (Existing + New - Churned)</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-foreground text-base">Net Business Impact (Existing + New - Churned)</CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="text-center p-3 bg-gradient-secondary rounded-lg">
-                  <div className="text-xl font-bold text-foreground">{campaignImpact.targetUsers}</div>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="text-center p-2 bg-gradient-secondary rounded-lg">
+                  <div className="text-lg font-bold text-foreground">{campaignImpact.targetUsers}</div>
                   <div className="text-xs font-medium text-muted-foreground">Net Target Users</div>
+                  <div className="text-xs text-success">+15 new acquisitions</div>
                 </div>
-                <div className="text-center p-3 bg-gradient-secondary rounded-lg">
+                <div className="text-center p-2 bg-gradient-secondary rounded-lg">
                   <div className="flex items-center justify-center gap-1 mb-1">
-                    <span className="text-xl font-bold text-foreground">{campaignImpact.usersUplifted}</span>
+                    <span className="text-lg font-bold text-foreground">{campaignImpact.usersUplifted}</span>
                     <Badge className="bg-gradient-success text-success-foreground text-xs">
                       +{campaignImpact.upliftPercentage}%
                     </Badge>
                   </div>
                   <div className="text-xs font-medium text-muted-foreground">Net Users Uplifted</div>
+                  <div className="text-xs text-success">-3 churned, +53 total</div>
                 </div>
-                <div className="text-center p-3 bg-gradient-secondary rounded-lg">
+                <div className="text-center p-2 bg-gradient-secondary rounded-lg">
                   <div className="flex items-center justify-center gap-1 mb-1">
-                    <span className="text-lg font-bold text-foreground">
+                    <span className="text-sm font-bold text-foreground">
                       {campaignImpact.avgVolUplift.before}L→{campaignImpact.avgVolUplift.after}L
                     </span>
                     <Badge className="bg-gradient-success text-success-foreground text-xs">
@@ -356,10 +410,12 @@ const SchemeReportsDashboard = ({ selectedScheme }: SchemeReportsDashboardProps)
                     </Badge>
                   </div>
                   <div className="text-xs font-medium text-muted-foreground">Net Avg Vol Uplift</div>
+                  <div className="text-xs text-success">Consistent growth</div>
                 </div>
-                <div className="text-center p-3 bg-gradient-secondary rounded-lg">
-                  <div className="text-xl font-bold text-foreground">{campaignImpact.totalVolUplift}L</div>
+                <div className="text-center p-2 bg-gradient-secondary rounded-lg">
+                  <div className="text-lg font-bold text-foreground">{campaignImpact.totalVolUplift}L</div>
                   <div className="text-xs font-medium text-muted-foreground">Net Total Vol Uplift</div>
+                  <div className="text-xs text-success">₹2.1M incremental</div>
                 </div>
               </div>
             </CardContent>
