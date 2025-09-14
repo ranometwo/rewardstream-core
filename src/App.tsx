@@ -40,6 +40,7 @@ const App = () => (
           <Route path="/analytics/schemes" element={<SchemeReports />} />
           <Route path="/analytics/users" element={<UserReports />} />
           <Route path="/analytics/advanced" element={<AdvancedAnalytics />} />
+          <Route path="/data" element={<MonitoringDashboard />} />
           <Route path="/data/ingestion" element={<DataIngestion />} />
           <Route path="/data/mapping" element={<MappingStudio />} />
           <Route path="/data/validation" element={<ValidationCenter />} />

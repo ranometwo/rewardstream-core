@@ -105,15 +105,80 @@ const MonitoringDashboard = () => {
   return (
     <Layout>
       <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <Activity className="h-8 w-8 text-primary" />
-          <div>
-            <h1 className="text-2xl font-bold">Monitoring Dashboard</h1>
-            <p className="text-muted-foreground">Real-time metrics and system logs</p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Activity className="h-8 w-8 text-primary" />
+            <div>
+              <h1 className="text-2xl font-bold">Data Management Overview</h1>
+              <p className="text-muted-foreground">Real-time metrics, system health and quick access</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="bg-green-100 text-green-800">System Healthy</Badge>
+            <Badge variant="outline">Live</Badge>
           </div>
         </div>
 
-        {/* Top Metrics */}
+        {/* Quick Access Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => window.location.href = '/data/ingestion'}>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <Download className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <p className="font-medium">Data Ingestion</p>
+                  <p className="text-sm text-muted-foreground">Upload & process files</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => window.location.href = '/data/mapping'}>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center">
+                  <TrendingUp className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="font-medium">Mapping Studio</p>
+                  <p className="text-sm text-muted-foreground">Discover relationships</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => window.location.href = '/data/validation'}>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-lg bg-orange-100 flex items-center justify-center">
+                  <Filter className="h-5 w-5 text-orange-600" />
+                </div>
+                <div>
+                  <p className="font-medium">Validation Center</p>
+                  <p className="text-sm text-muted-foreground">Quality rules & checks</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => window.location.href = '/data/settings'}>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                  <Search className="h-5 w-5 text-purple-600" />
+                </div>
+                <div>
+                  <p className="font-medium">Settings</p>
+                  <p className="text-sm text-muted-foreground">LLM & preferences</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {metrics.map((metric, index) => (
             <Card key={index}>
@@ -151,6 +216,38 @@ const MonitoringDashboard = () => {
             </Card>
           ))}
         </div>
+
+        {/* Pipeline Status */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg">Data Pipeline Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="flex items-center gap-3">
+                <div className="h-2 w-2 rounded-full bg-green-500"></div>
+                <div>
+                  <p className="font-medium">Ingestion Pipeline</p>
+                  <p className="text-sm text-muted-foreground">Running • Last: 2 min ago</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
+                <div>
+                  <p className="font-medium">Mapping Service</p>
+                  <p className="text-sm text-muted-foreground">Processing • 3 files queued</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="h-2 w-2 rounded-full bg-green-500"></div>
+                <div>
+                  <p className="font-medium">Validation Engine</p>
+                  <p className="text-sm text-muted-foreground">Active • 97% pass rate</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         <Tabs defaultValue="logs" className="space-y-4">
           <TabsList>
