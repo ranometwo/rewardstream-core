@@ -142,7 +142,7 @@ const DataIngestion = () => {
 
         {/* Import Wizard Modal */}
         <Dialog open={showImportWizard} onOpenChange={setShowImportWizard}>
-          <DialogContent className="max-w-6xl h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-[85vw] h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Data Import Wizard</DialogTitle>
             </DialogHeader>
