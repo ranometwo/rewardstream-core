@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 
 const DataIngestion = () => {
     return (
-      <div></div>;
+      <div></div>,
     );
 };
 
