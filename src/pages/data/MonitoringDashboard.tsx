@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import { Activity, TrendingUp, ArrowUp, ArrowDown, Download, Search, Filter } fr
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 const MonitoringDashboard = () => {
+  const navigate = useNavigate();
   const metrics = [
     {
       title: "Records Processed",
@@ -121,7 +123,7 @@ const MonitoringDashboard = () => {
 
         {/* Quick Access Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => window.location.href = '/data/ingestion'}>
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate('/data/ingestion')}>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
@@ -135,7 +137,7 @@ const MonitoringDashboard = () => {
             </CardContent>
           </Card>
           
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => window.location.href = '/data/mapping'}>
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate('/data/mapping')}>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center">
@@ -149,7 +151,7 @@ const MonitoringDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => window.location.href = '/data/validation'}>
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate('/data/validation')}>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-lg bg-orange-100 flex items-center justify-center">
@@ -163,7 +165,7 @@ const MonitoringDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => window.location.href = '/data/settings'}>
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate('/data/settings')}>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-lg bg-purple-100 flex items-center justify-center">

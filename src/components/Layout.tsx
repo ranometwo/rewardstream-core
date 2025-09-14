@@ -1,10 +1,11 @@
-import React, { useState, useRef, useCallback, useMemo } from "react";
+import React, { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
+import { useSidebarStore } from "@/stores/sidebarStore";
 import { Users, Trophy, Zap, TrendingUp, Settings, Bell, Award, Target, Gift, Star, PanelLeftClose, PanelLeftOpen, LucideIcon, ChevronDown, ChevronRight, BarChart3, Database, HardDrive } from "lucide-react";
 
 interface NavigationItem {
@@ -43,7 +44,7 @@ const SIDEBAR_CONFIG = {
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [sidebarWidth, setSidebarWidth] = useState<number>(SIDEBAR_CONFIG.EXPANDED_WIDTH);
-  const [expandedSections, setExpandedSections] = useState<ExpandedSections>({});
+  const { expandedSections, toggleSection, initializeFromRoute } = useSidebarStore();
   const panelGroupRef = useRef<any>(null);
   const location = useLocation();
 
@@ -119,27 +120,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     },
   ], []);
 
-  const toggleSection = useCallback((sectionId: string) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [sectionId]: !prev[sectionId]
-    }));
-  }, []);
-
-  // Auto-expand section when navigating to a sub-route but only if not explicitly collapsed by user
-  React.useEffect(() => {
-    const currentPath = location.pathname;
-    
-    // Check if current path matches any nested route and auto-expand parent if not explicitly set
-    navigationItems.forEach(item => {
-      if (item.children) {
-        const hasActiveChild = item.children.some(child => child.path === currentPath);
-        if (hasActiveChild && expandedSections[item.id] === undefined) {
-          setExpandedSections(prev => ({ ...prev, [item.id]: true }));
-        }
-      }
-    });
-  }, [location.pathname, navigationItems]);
+  // Initialize sidebar state based on current route on app load
+  useEffect(() => {
+    initializeFromRoute(location.pathname);
+  }, [initializeFromRoute, location.pathname]);
 
   const isItemActive = useCallback((item: NavigationItem): boolean => {
     if (item.children) {
