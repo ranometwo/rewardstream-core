@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -245,145 +244,165 @@ export const DataPreview = ({ file, delimiter, onProfileComplete }: DataPreviewP
   }
 
   return (
-    <div className="space-y-3">
-      {/* Inline Summary Stats */}
-      <div className="flex items-center gap-4 p-2 bg-muted/30 rounded-md text-sm">
-        <div className="flex items-center gap-1">
-          <Hash className="w-3 h-3" />
-          <span className="font-medium">{totalRows.toLocaleString()}</span>
-          <span className="text-muted-foreground">rows</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <BarChart3 className="w-3 h-3" />
-          <span className="font-medium">{columns.length}</span>
-          <span className="text-muted-foreground">cols</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <EyeOff className="w-3 h-3" />
-          <span className="font-medium">{maskedColumns.size}</span>
-          <span className="text-muted-foreground">PII</span>
-        </div>
-        <div className="ml-auto">
-          <Button variant="outline" onClick={profileData} className="h-6 text-xs">
-            <RefreshCw className="w-3 h-3 mr-1" />
-            Re-analyze
-          </Button>
-        </div>
+    <div className="space-y-6">
+      {/* Summary Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <Hash className="w-5 h-5 text-muted-foreground" />
+              <div>
+                <div className="text-2xl font-bold">{totalRows.toLocaleString()}</div>
+                <div className="text-sm text-muted-foreground">Total Rows</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-muted-foreground" />
+              <div>
+                <div className="text-2xl font-bold">{columns.length}</div>
+                <div className="text-sm text-muted-foreground">Columns</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <EyeOff className="w-5 h-5 text-muted-foreground" />
+              <div>
+                <div className="text-2xl font-bold">{maskedColumns.size}</div>
+                <div className="text-sm text-muted-foreground">PII Columns</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Compact Column Analysis */}
-      <div className="border rounded-md overflow-hidden">
-        <div className="bg-muted/50 px-2 py-1 border-b">
-          <Label className="text-sm font-medium">Column Analysis</Label>
-        </div>
-        <div className="overflow-x-auto max-h-64">
-          <table className="w-full text-xs">
-            <thead className="bg-muted/30 sticky top-0">
-              <tr>
-                <th className="text-left p-1 font-medium">Column</th>
-                <th className="text-left p-1 font-medium">Type</th>
-                <th className="text-left p-1 font-medium">Conf</th>
-                <th className="text-left p-1 font-medium">Null%</th>
-                <th className="text-left p-1 font-medium">Distinct</th>
-                <th className="text-left p-1 font-medium">Samples</th>
-                <th className="text-left p-1 font-medium w-8"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {columns.map((column) => (
-                <tr key={column.name} className="border-t hover:bg-muted/20">
-                  <td className="p-1">
-                    <div className="flex items-center gap-1">
-                      <span className="font-medium">{column.name}</span>
-                      {(column.patterns.hasEmail || column.patterns.hasPhone) && (
-                        <Badge variant="outline" className="text-xs px-1 py-0">PII</Badge>
-                      )}
-                    </div>
-                  </td>
-                  <td className="p-1">
-                    <div className="flex items-center gap-1">
-                      {getTypeIcon(column.suggestedType)}
-                      <span>{column.suggestedType}</span>
-                      {column.patterns.dateFormat && (
-                        <Badge variant="outline" className="text-xs px-1 py-0">
-                          {column.patterns.dateFormat}
-                        </Badge>
-                      )}
-                    </div>
-                  </td>
-                  <td className="p-1">
-                    <Badge className={`${getConfidenceColor(column.confidence)} text-xs px-1 py-0`}>
-                      {column.confidence[0].toUpperCase()}
-                    </Badge>
-                  </td>
-                  <td className="p-1 text-muted-foreground">{column.nullPercentage.toFixed(1)}%</td>
-                  <td className="p-1 text-muted-foreground">{column.distinctCount.toLocaleString()}</td>
-                  <td className="p-1">
-                    <div className="max-w-24 text-muted-foreground">
-                      {column.sampleValues.slice(0, 2).map((value, idx) => (
-                        <div key={idx} className="truncate text-xs">
-                          {maskedColumns.has(column.name) ? maskValue(value) : value}
-                        </div>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="p-1">
-                    <Button
-                      variant="ghost"
-                      onClick={() => toggleMask(column.name)}
-                      className="h-5 w-5 p-0"
-                    >
-                      {maskedColumns.has(column.name) ? (
-                        <EyeOff className="w-3 h-3" />
-                      ) : (
-                        <Eye className="w-3 h-3" />
-                      )}
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Compact Sample Data */}
-      <div className="border rounded-md overflow-hidden">
-        <div className="bg-muted/50 px-2 py-1 border-b flex items-center justify-between">
-          <Label className="text-sm font-medium">Sample Data</Label>
-          <Badge variant="outline" className="text-xs">20 rows</Badge>
-        </div>
-        <div className="overflow-auto max-h-40">
-          <table className="w-full text-xs">
-            <thead className="bg-muted/30 sticky top-0">
-              <tr>
+      {/* Column Profiling */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            Column Analysis
+            <Button variant="outline" onClick={profileData}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Re-analyze
+            </Button>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Column</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Confidence</TableHead>
+                  <TableHead>Null %</TableHead>
+                  <TableHead>Distinct</TableHead>
+                  <TableHead>Sample Values</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {columns.map((column) => (
-                  <th key={column.name} className="text-left p-1 font-medium min-w-[60px]">
-                    {column.name}
-                  </th>
+                  <TableRow key={column.name}>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        {column.name}
+                        {(column.patterns.hasEmail || column.patterns.hasPhone) && (
+                          <Badge variant="outline" className="text-xs">PII</Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {getTypeIcon(column.suggestedType)}
+                        <span className="capitalize">{column.suggestedType}</span>
+                        {column.patterns.dateFormat && (
+                          <Badge variant="outline" className="text-xs">
+                            {column.patterns.dateFormat}
+                          </Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getConfidenceColor(column.confidence)}>
+                        {column.confidence}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{column.nullPercentage.toFixed(1)}%</TableCell>
+                    <TableCell>{column.distinctCount.toLocaleString()}</TableCell>
+                    <TableCell>
+                      <div className="max-w-xs">
+                        {column.sampleValues.slice(0, 3).map((value, idx) => (
+                          <div key={idx} className="text-sm text-muted-foreground truncate">
+                            {maskedColumns.has(column.name) ? maskValue(value) : value}
+                          </div>
+                        ))}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        onClick={() => toggleMask(column.name)}
+                      >
+                        {maskedColumns.has(column.name) ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tr>
-            </thead>
-            <tbody>
-              {sampleRows.map((row, rowIndex) => (
-                <tr key={rowIndex} className="border-t hover:bg-muted/20">
-                  {row.map((cell, cellIndex) => {
-                    const column = columns[cellIndex];
-                    const shouldMask = column && maskedColumns.has(column.name);
-                    return (
-                      <td key={cellIndex} className="p-1 font-mono text-muted-foreground">
-                        <div className="max-w-20 truncate">
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Sample Data Preview */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Sample Data (First 20 rows)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  {columns.map((column) => (
+                    <TableHead key={column.name} className="min-w-[120px]">
+                      {column.name}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sampleRows.map((row, rowIndex) => (
+                  <TableRow key={rowIndex}>
+                    {row.map((cell, cellIndex) => {
+                      const column = columns[cellIndex];
+                      const shouldMask = column && maskedColumns.has(column.name);
+                      return (
+                        <TableCell key={cellIndex} className="font-mono text-sm">
                           {shouldMask ? maskValue(cell) : cell}
-                        </div>
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* PII Notice */}
       {maskedColumns.size > 0 && (

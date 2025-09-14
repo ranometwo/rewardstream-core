@@ -84,63 +84,53 @@ export const ImportWizard = ({ onComplete }: ImportWizardProps) => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-3">
-      {/* Compact Breadcrumb Progress */}
-      <div className="flex items-center gap-2 p-2 mb-3 bg-muted/30 rounded-lg">
-        {steps.map((step, index) => {
-          const StepIcon = step.icon;
-          const isActive = index === currentStep;
-          const isCompleted = index < currentStep;
-          
-          return (
-            <div key={step.id} className="flex items-center">
-              <div className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium ${
-                isCompleted 
-                  ? 'bg-primary/10 text-primary' 
-                  : isActive 
-                    ? 'bg-primary text-primary-foreground' 
-                    : 'text-muted-foreground'
-              }`}>
-                <StepIcon className="w-3 h-3" />
-                <span className="hidden sm:inline">{step.title}</span>
-                <span className="sm:hidden">{index + 1}</span>
+    <div className="container mx-auto p-6 max-w-6xl">
+      {/* Progress Steps */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between">
+          {steps.map((step, index) => {
+            const StepIcon = step.icon;
+            const isActive = index === currentStep;
+            const isCompleted = index < currentStep;
+            
+            return (
+              <div key={step.id} className="flex items-center">
+                <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
+                  isCompleted 
+                    ? 'bg-primary border-primary text-primary-foreground' 
+                    : isActive 
+                      ? 'border-primary text-primary bg-primary/10' 
+                      : 'border-muted-foreground text-muted-foreground'
+                }`}>
+                  <StepIcon className="w-5 h-5" />
+                </div>
+                <div className="ml-3 hidden md:block">
+                  <div className={`text-sm font-medium ${
+                    isActive ? 'text-primary' : isCompleted ? 'text-foreground' : 'text-muted-foreground'
+                  }`}>
+                    {step.title}
+                  </div>
+                </div>
+                {index < steps.length - 1 && (
+                  <div className={`h-0.5 w-16 mx-4 ${
+                    isCompleted ? 'bg-primary' : 'bg-muted'
+                  }`} />
+                )}
               </div>
-              {index < steps.length - 1 && (
-                <ChevronRight className="w-3 h-3 mx-1 text-muted-foreground" />
-              )}
-            </div>
-          );
-        })}
-        <div className="ml-auto flex items-center gap-2">
-          <Badge variant="outline" className="text-xs">
-            {currentStep + 1}/{steps.length}
-          </Badge>
-          <div className="flex gap-1">
-            <Button 
-              variant="ghost" 
-              onClick={prevStep}
-              disabled={currentStep === 0}
-              className="h-6 px-2"
-            >
-              <ChevronLeft className="w-3 h-3" />
-            </Button>
-            <Button 
-              onClick={nextStep}
-              disabled={currentStep === steps.length - 1 || !canProceed()}
-              className="h-6 px-2"
-            >
-              <ChevronRight className="w-3 h-3" />
-            </Button>
-          </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* Streamlined Content */}
-      <div className="bg-background border rounded-lg">
-        <div className="border-b p-3">
-          <h2 className="text-lg font-semibold">{steps[currentStep].title}</h2>
-        </div>
-        <div className="p-3">
+      {/* Step Content */}
+      <Card className="min-h-[600px]">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            {steps[currentStep].title}
+            <Badge variant="outline">Step {currentStep + 1} of {steps.length}</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
           {currentStep === 0 && (
             <IntentStep 
               importData={importData} 
@@ -180,8 +170,34 @@ export const ImportWizard = ({ onComplete }: ImportWizardProps) => {
               onCommit={onComplete}
             />
           )}
+        </CardContent>
+        
+        {/* Navigation */}
+        <div className="flex justify-between items-center p-6 border-t">
+          <Button 
+            variant="outline" 
+            onClick={prevStep}
+            disabled={currentStep === 0}
+            className="flex items-center gap-2"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Previous
+          </Button>
+          
+          <div className="text-sm text-muted-foreground">
+            Step {currentStep + 1} of {steps.length}
+          </div>
+          
+          <Button 
+            onClick={nextStep}
+            disabled={currentStep === steps.length - 1 || !canProceed()}
+            className="flex items-center gap-2"
+          >
+            Next
+            <ChevronRight className="w-4 h-4" />
+          </Button>
         </div>
-      </div>
+      </Card>
     </div>
   );
 };
@@ -194,110 +210,105 @@ interface IntentStepProps {
 
 const IntentStep = ({ importData, updateImportData }: IntentStepProps) => {
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div>
-        <Label className="text-sm font-medium mb-2 block">Import Mode</Label>
+        <Label className="text-base font-medium">Import Mode</Label>
         <RadioGroup 
           value={importData.mode} 
           onValueChange={(mode) => updateImportData({ mode })}
-          className="grid grid-cols-1 md:grid-cols-3 gap-3"
+          className="mt-3"
         >
-          <div className="flex items-center space-x-2 p-3 border rounded-md">
+          <div className="flex items-center space-x-2 p-4 border rounded-lg">
             <RadioGroupItem value="append" id="append" />
             <div className="flex-1">
-              <Label htmlFor="append" className="font-medium text-sm">Append</Label>
-              <p className="text-xs text-muted-foreground">Add new rows</p>
+              <Label htmlFor="append" className="font-medium">Append</Label>
+              <p className="text-sm text-muted-foreground">Add new rows to existing dataset (reject duplicates)</p>
             </div>
           </div>
-          <div className="flex items-center space-x-2 p-3 border rounded-md">
+          <div className="flex items-center space-x-2 p-4 border rounded-lg">
             <RadioGroupItem value="upsert" id="upsert" />
             <div className="flex-1">
-              <Label htmlFor="upsert" className="font-medium text-sm">Upsert</Label>
-              <p className="text-xs text-muted-foreground">Update or insert</p>
+              <Label htmlFor="upsert" className="font-medium">Merge/Upsert</Label>
+              <p className="text-sm text-muted-foreground">Update on PK match, else insert</p>
             </div>
           </div>
-          <div className="flex items-center space-x-2 p-3 border rounded-md">
+          <div className="flex items-center space-x-2 p-4 border rounded-lg">
             <RadioGroupItem value="replace" id="replace" />
             <div className="flex-1">
-              <Label htmlFor="replace" className="font-medium text-sm">Replace</Label>
-              <p className="text-xs text-muted-foreground">New version</p>
+              <Label htmlFor="replace" className="font-medium">Replace (Versioned)</Label>
+              <p className="text-sm text-muted-foreground">Create new immutable version (old version retained)</p>
             </div>
           </div>
         </RadioGroup>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {(importData.mode === 'append' || importData.mode === 'upsert') && (
-          <div className="space-y-1">
-            <Label htmlFor="target-dataset" className="text-sm">Target Dataset</Label>
-            <Select onValueChange={(value) => updateImportData({ targetDataset: value })}>
-              <SelectTrigger className="h-8">
-                <SelectValue placeholder="Select dataset..." />
+      {(importData.mode === 'append' || importData.mode === 'upsert') && (
+        <div className="space-y-2">
+          <Label htmlFor="target-dataset">Target Dataset</Label>
+          <Select onValueChange={(value) => updateImportData({ targetDataset: value })}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select existing dataset..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="users">Users Dataset</SelectItem>
+              <SelectItem value="events">Events Dataset</SelectItem>
+              <SelectItem value="products">Products Dataset</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      {importData.mode === 'replace' && (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="dataset-name">New Dataset Name</Label>
+            <Input
+              id="dataset-name"
+              value={importData.newDatasetName}
+              onChange={(e) => updateImportData({ newDatasetName: e.target.value })}
+              placeholder="Enter dataset name..."
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="category">Dataset Category</Label>
+            <Select onValueChange={(value) => updateImportData({ category: value })}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select category..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="users">Users Dataset</SelectItem>
-                <SelectItem value="events">Events Dataset</SelectItem>
-                <SelectItem value="products">Products Dataset</SelectItem>
+                <SelectItem value="event_data">Event Data</SelectItem>
+                <SelectItem value="user_data">User Data</SelectItem>
+                <SelectItem value="product_data">Product Data</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
           </div>
-        )}
 
-        {importData.mode === 'replace' && (
-          <>
-            <div className="space-y-1">
-              <Label htmlFor="dataset-name" className="text-sm">Dataset Name</Label>
+          {importData.category === 'other' && (
+            <div className="space-y-2">
+              <Label htmlFor="custom-category">Custom Category Label</Label>
               <Input
-                id="dataset-name"
-                value={importData.newDatasetName}
-                onChange={(e) => updateImportData({ newDatasetName: e.target.value })}
-                placeholder="Enter name..."
-                className="h-8"
+                id="custom-category"
+                value={importData.customCategory}
+                onChange={(e) => updateImportData({ customCategory: e.target.value })}
+                placeholder="Enter custom category..."
               />
             </div>
+          )}
 
-            <div className="space-y-1">
-              <Label htmlFor="category" className="text-sm">Category</Label>
-              <Select onValueChange={(value) => updateImportData({ category: value })}>
-                <SelectTrigger className="h-8">
-                  <SelectValue placeholder="Select category..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="event_data">Event Data</SelectItem>
-                  <SelectItem value="user_data">User Data</SelectItem>
-                  <SelectItem value="product_data">Product Data</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {importData.category === 'other' && (
-              <div className="space-y-1">
-                <Label htmlFor="custom-category" className="text-sm">Custom Category</Label>
-                <Input
-                  id="custom-category"
-                  value={importData.customCategory}
-                  onChange={(e) => updateImportData({ customCategory: e.target.value })}
-                  placeholder="Custom category..."
-                  className="h-8"
-                />
-              </div>
-            )}
-
-            <div className="space-y-1 md:col-span-2">
-              <Label htmlFor="description" className="text-sm">Description</Label>
-              <Textarea
-                id="description"
-                value={importData.description}
-                onChange={(e) => updateImportData({ description: e.target.value })}
-                placeholder="Dataset description..."
-                rows={2}
-                className="text-sm"
-              />
-            </div>
-          </>
-        )}
-      </div>
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={importData.description}
+              onChange={(e) => updateImportData({ description: e.target.value })}
+              placeholder="Describe this dataset..."
+              rows={3}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
