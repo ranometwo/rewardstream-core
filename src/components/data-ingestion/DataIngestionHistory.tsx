@@ -21,7 +21,7 @@ import {
   FileText,
   BarChart3
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+
 
 interface ImportRun {
   id: string;
@@ -61,27 +61,10 @@ export const DataIngestionHistory = ({ onSelectRun, dataType }: DataIngestionHis
   const loadImportHistory = async () => {
     try {
       setLoading(true);
-      let query = supabase
-        .from('import_runs')
-        .select(`
-          *,
-          datasets!inner(
-            name,
-            category
-          )
-        `)
-        .order('started_at', { ascending: false })
-        .limit(100);
-
-      // Filter by data type if specified
-      if (dataType && dataType !== 'all') {
-        query = query.eq('datasets.category', dataType);
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-      setRuns(data || []);
+      
+      // Simulate loading with empty data since no database
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setRuns([]);
     } catch (error) {
       console.error('Error loading import history:', error);
     } finally {
