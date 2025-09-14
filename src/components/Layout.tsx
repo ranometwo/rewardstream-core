@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
-import { Users, Trophy, Zap, TrendingUp, Settings, Bell, Award, Target, Gift, Star, PanelLeftClose, PanelLeftOpen, LucideIcon, ChevronDown, ChevronRight, BarChart3, Database } from "lucide-react";
+import { Users, Trophy, Zap, TrendingUp, Settings, Bell, Award, Target, Gift, Star, PanelLeftClose, PanelLeftOpen, LucideIcon, ChevronDown, ChevronRight, BarChart3, Database, HardDrive } from "lucide-react";
 
 interface NavigationItem {
   id: string;
@@ -103,6 +103,20 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         { id: "analytics-schemes", label: "Scheme Reports", icon: BarChart3, path: "/analytics/schemes" },
         { id: "analytics-users", label: "User Reports", icon: Users, path: "/analytics/users" },
         { id: "analytics-advanced", label: "Advanced", icon: Target, path: "/analytics/advanced" },
+      ]
+    },
+    { 
+      id: "data", 
+      label: "Data Management", 
+      icon: HardDrive, 
+      path: "/data",
+      children: [
+        { id: "data-ingestion", label: "Data Ingestion", icon: TrendingUp, path: "/data/ingestion" },
+        { id: "data-mapping", label: "Mapping Studio", icon: Settings, path: "/data/mapping" },
+        { id: "data-validation", label: "Validation Center", icon: Trophy, path: "/data/validation" },
+        { id: "data-monitoring", label: "Monitoring", icon: BarChart3, path: "/data/monitoring" },
+        { id: "data-integrations", label: "Integrations", icon: Zap, path: "/data/integrations" },
+        { id: "data-settings", label: "Settings", icon: Settings, path: "/data/settings" },
       ]
     },
   ], []);
