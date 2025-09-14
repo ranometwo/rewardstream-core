@@ -248,187 +248,157 @@ export const ValidationResults = ({ mappings, file, onValidationComplete }: Vali
   const topErrors = getTopErrorReasons();
 
   return (
-    <div className="space-y-6">
-      {/* Validation Status */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            {results.passed ? (
-              <CheckCircle className="w-6 h-6 text-green-500" />
-            ) : (
-              <XCircle className="w-6 h-6 text-red-500" />
-            )}
+    <div className="space-y-3">
+      {/* Compact Validation Status */}
+      <div className="flex items-center justify-between p-2 bg-muted/30 rounded-md">
+        <div className="flex items-center gap-3">
+          {results.passed ? (
+            <CheckCircle className="w-4 h-4 text-green-500" />
+          ) : (
+            <XCircle className="w-4 h-4 text-red-500" />
+          )}
+          <div className="text-sm font-medium">
             Validation {results.passed ? 'Passed' : 'Failed'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold">{results.summary.totalRows.toLocaleString()}</div>
-              <div className="text-sm text-muted-foreground">Total Rows</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{results.summary.passedRows.toLocaleString()}</div>
-              <div className="text-sm text-muted-foreground">Passed</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-red-600">{results.summary.errorCount}</div>
-              <div className="text-sm text-muted-foreground">Errors</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-600">{results.summary.warningCount}</div>
-              <div className="text-sm text-muted-foreground">Warnings</div>
-            </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+        <div className="flex items-center gap-4 text-xs">
+          <div className="flex items-center gap-1">
+            <span className="font-medium">{results.summary.totalRows.toLocaleString()}</span>
+            <span className="text-muted-foreground">total</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="font-medium text-green-600">{results.summary.passedRows.toLocaleString()}</span>
+            <span className="text-muted-foreground">passed</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="font-medium text-red-600">{results.summary.errorCount}</span>
+            <span className="text-muted-foreground">errors</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="font-medium text-yellow-600">{results.summary.warningCount}</span>
+            <span className="text-muted-foreground">warnings</span>
+          </div>
+          <div className="flex gap-1">
+            <Button variant="outline" onClick={downloadErrorReport} className="h-5 px-2 text-xs">
+              <Download className="w-3 h-3 mr-1" />
+              Export
+            </Button>
+            <Button variant="outline" onClick={runValidation} className="h-5 px-2 text-xs">
+              <RefreshCw className="w-3 h-3 mr-1" />
+              Retry
+            </Button>
+          </div>
+        </div>
+      </div>
 
-      {/* Top Error Reasons */}
+      {/* Compact Error Reasons */}
       {topErrors.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="w-5 h-5" />
-              Top Error Reasons
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {topErrors.map(({ rule, count }) => (
-                <div key={rule} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="destructive" className="capitalize">
-                      {rule.replace('_', ' ')}
-                    </Badge>
-                    <span className="text-sm text-muted-foreground">
-                      {rule === 'date_format' && 'Invalid date format'}
-                      {rule === 'primary_key' && 'Primary key violation'}
-                      {rule === 'type_check' && 'Type mismatch'}
-                      {rule === 'foreign_key' && 'Foreign key constraint'}
-                    </span>
-                  </div>
-                  <Badge variant="outline">{count} issues</Badge>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Error Details Table */}
-      {results.issues.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Validation Issues</span>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={downloadErrorReport}>
-                  <Download className="w-4 h-4 mr-2" />
-                  Download Report
-                </Button>
-                <Button variant="outline" onClick={runValidation}>
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Re-validate
-                </Button>
+        <div className="p-2 bg-muted/30 rounded-md">
+          <Label className="text-sm font-medium mb-1 block">Top Issues:</Label>
+          <div className="flex flex-wrap gap-2">
+            {topErrors.map(({ rule, count }) => (
+              <div key={rule} className="flex items-center gap-1">
+                <Badge variant="destructive" className="text-xs px-1 py-0 capitalize">
+                  {rule.replace('_', ' ')}
+                </Badge>
+                <span className="text-xs text-muted-foreground">{count}</span>
               </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Row</TableHead>
-                    <TableHead>Column</TableHead>
-                    <TableHead>Rule</TableHead>
-                    <TableHead>Severity</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Sample Value</TableHead>
-                    <TableHead>Fix Suggestion</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {results.issues.slice(0, 50).map((issue, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{issue.row}</TableCell>
-                      <TableCell className="font-mono">{issue.column}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="capitalize">
-                          {issue.rule.replace('_', ' ')}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge 
-                          variant={issue.severity === 'error' ? 'destructive' : 'default'}
-                          className={issue.severity === 'warning' ? 'bg-yellow-100 text-yellow-800' : ''}
-                        >
-                          {issue.severity}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="max-w-xs">
-                        <div className="truncate" title={issue.description}>
-                          {issue.description}
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-mono text-sm">
-                        {issue.sampleValue}
-                      </TableCell>
-                      <TableCell className="max-w-xs">
-                        <div className="text-sm text-muted-foreground truncate" title={issue.fixSuggestion}>
-                          {issue.fixSuggestion}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-              {results.issues.length > 50 && (
-                <div className="text-center py-4 text-sm text-muted-foreground">
-                  Showing first 50 of {results.issues.length} issues. Download report for complete list.
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+            ))}
+          </div>
+        </div>
       )}
 
-      {/* Success Message */}
-      {results.passed && (
-        <Alert>
-          <CheckCircle className="h-4 w-4" />
-          <AlertDescription>
-            All validation checks passed successfully. Your data is ready for import.
+      {/* Compact Issues Table */}
+      {results.issues.length > 0 && (
+        <div className="border rounded-md overflow-hidden">
+          <div className="bg-muted/50 px-2 py-1 border-b">
+            <Label className="text-sm font-medium">Validation Issues ({results.issues.length})</Label>
+          </div>
+          <div className="overflow-x-auto max-h-64">
+            <table className="w-full text-xs">
+              <thead className="bg-muted/30 sticky top-0">
+                <tr>
+                  <th className="text-left p-1 font-medium">Row</th>
+                  <th className="text-left p-1 font-medium">Column</th>
+                  <th className="text-left p-1 font-medium">Rule</th>
+                  <th className="text-left p-1 font-medium">Sev</th>
+                  <th className="text-left p-1 font-medium">Description</th>
+                  <th className="text-left p-1 font-medium">Value</th>
+                  <th className="text-left p-1 font-medium">Fix</th>
+                </tr>
+              </thead>
+              <tbody>
+                {results.issues.slice(0, 50).map((issue, index) => (
+                  <tr key={index} className="border-t hover:bg-muted/20">
+                    <td className="p-1 font-medium">{issue.row}</td>
+                    <td className="p-1 font-mono">{issue.column}</td>
+                    <td className="p-1">
+                      <Badge variant="outline" className="text-xs px-1 py-0 capitalize">
+                        {issue.rule.replace('_', ' ')}
+                      </Badge>
+                    </td>
+                    <td className="p-1">
+                      <Badge 
+                        variant={issue.severity === 'error' ? 'destructive' : 'default'}
+                        className={`text-xs px-1 py-0 ${issue.severity === 'warning' ? 'bg-yellow-100 text-yellow-800' : ''}`}
+                      >
+                        {issue.severity[0].toUpperCase()}
+                      </Badge>
+                    </td>
+                    <td className="p-1 max-w-32">
+                      <div className="truncate" title={issue.description}>
+                        {issue.description}
+                      </div>
+                    </td>
+                    <td className="p-1 font-mono max-w-20">
+                      <div className="truncate">
+                        {issue.sampleValue}
+                      </div>
+                    </td>
+                    <td className="p-1 max-w-32 text-muted-foreground">
+                      <div className="truncate" title={issue.fixSuggestion}>
+                        {issue.fixSuggestion}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {results.issues.length > 50 && (
+            <div className="text-center py-1 text-xs text-muted-foreground bg-muted/30">
+              Showing 50 of {results.issues.length} issues
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Success/Error Actions */}
+      {results.passed ? (
+        <Alert className="p-2">
+          <CheckCircle className="h-3 w-3" />
+          <AlertDescription className="text-xs">
+            All validation checks passed. Ready for import.
           </AlertDescription>
         </Alert>
-      )}
-
-      {/* Blocking vs Skip Options */}
-      {!results.passed && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Import Options</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <Alert variant="destructive">
-                <XCircle className="h-4 w-4" />
-                <AlertDescription>
-                  {results.summary.errorCount} error(s) found. Import is currently blocked.
-                </AlertDescription>
-              </Alert>
-              
-              <div className="flex gap-4">
-                <Button variant="outline" className="flex-1">
-                  <FileText className="w-4 h-4 mr-2" />
-                  Fix Issues & Re-upload
-                </Button>
-                <Button variant="destructive" className="flex-1">
-                  Skip Invalid Rows ({new Set(results.issues.filter(i => i.severity === 'error').map(i => i.row)).size} rows)
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      ) : (
+        <div className="p-2 border border-red-200 bg-red-50/50 rounded-md">
+          <div className="flex items-center gap-2 mb-2">
+            <XCircle className="h-3 w-3 text-red-500" />
+            <span className="text-xs font-medium text-red-800">
+              {results.summary.errorCount} errors block import
+            </span>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" className="h-6 text-xs flex-1">
+              <FileText className="w-3 h-3 mr-1" />
+              Fix & Re-upload
+            </Button>
+            <Button variant="destructive" className="h-6 text-xs flex-1">
+              Skip {new Set(results.issues.filter(i => i.severity === 'error').map(i => i.row)).size} Invalid Rows
+            </Button>
+          </div>
+        </div>
       )}
     </div>
   );

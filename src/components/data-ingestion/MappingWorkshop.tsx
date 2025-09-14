@@ -207,224 +207,197 @@ export const MappingWorkshop = ({ profiledData, onMappingComplete }: MappingWork
   const summary = getMappingSummary();
 
   return (
-    <div className="space-y-6">
-      {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="p-4">
-          <div className="flex items-center gap-2">
-            <Target className="w-5 h-5 text-blue-500" />
-            <div>
-              <div className="text-2xl font-bold">{summary.mapped}</div>
-              <div className="text-sm text-muted-foreground">Fields Mapped</div>
-            </div>
-          </div>
-        </Card>
-        
-        <Card className="p-4">
-          <div className="flex items-center gap-2">
-            <Link2 className="w-5 h-5 text-green-500" />
-            <div>
-              <div className="text-2xl font-bold">{summary.relations}</div>
-              <div className="text-sm text-muted-foreground">Relations</div>
-            </div>
-          </div>
-        </Card>
-        
-        <Card className="p-4">
-          <div className="flex items-center gap-2">
-            <Key className="w-5 h-5 text-purple-500" />
-            <div>
-              <div className="text-2xl font-bold">{summary.hasPK ? '1' : '0'}</div>
-              <div className="text-sm text-muted-foreground">Primary Key</div>
-            </div>
-          </div>
-        </Card>
-        
-        <Card className="p-4">
-          <div className="flex items-center gap-2">
-            <Type className="w-5 h-5 text-orange-500" />
-            <div>
-              <div className="text-2xl font-bold">{profiledData.columns.length - summary.mapped}</div>
-              <div className="text-sm text-muted-foreground">Attributes</div>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* View Toggle */}
-      <Tabs value={activeView} onValueChange={(v) => setActiveView(v as 'table' | 'graph')}>
-        <div className="flex justify-between items-center">
-          <TabsList>
-            <TabsTrigger value="table" className="flex items-center gap-2">
-              <Type className="w-4 h-4" />
-              Table View
-            </TabsTrigger>
-            <TabsTrigger value="graph" className="flex items-center gap-2">
-              <Network className="w-4 h-4" />
-              Graph View
-            </TabsTrigger>
-          </TabsList>
-          
-          <Button variant="outline" onClick={generateSuggestions}>
-            <RotateCcw className="w-4 h-4 mr-2" />
+    <div className="space-y-3">
+      {/* Inline Summary Stats */}
+      <div className="flex items-center gap-4 p-2 bg-muted/30 rounded-md text-sm">
+        <div className="flex items-center gap-1">
+          <Target className="w-3 h-3 text-blue-500" />
+          <span className="font-medium">{summary.mapped}</span>
+          <span className="text-muted-foreground">mapped</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <Link2 className="w-3 h-3 text-green-500" />
+          <span className="font-medium">{summary.relations}</span>
+          <span className="text-muted-foreground">relations</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <Key className="w-3 h-3 text-purple-500" />
+          <span className="font-medium">{summary.hasPK ? '1' : '0'}</span>
+          <span className="text-muted-foreground">PK</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <Type className="w-3 h-3 text-orange-500" />
+          <span className="font-medium">{profiledData.columns.length - summary.mapped}</span>
+          <span className="text-muted-foreground">attrs</span>
+        </div>
+        <div className="ml-auto flex items-center gap-2">
+          <Button variant="outline" onClick={generateSuggestions} className="h-6 text-xs">
+            <RotateCcw className="w-3 h-3 mr-1" />
             Re-analyze
           </Button>
+          <div className="flex">
+            <Button 
+              variant={activeView === 'table' ? 'default' : 'outline'}
+              onClick={() => setActiveView('table')}
+              className="h-6 px-2 text-xs rounded-r-none"
+            >
+              <Type className="w-3 h-3" />
+            </Button>
+            <Button 
+              variant={activeView === 'graph' ? 'default' : 'outline'}
+              onClick={() => setActiveView('graph')}
+              className="h-6 px-2 text-xs rounded-l-none"
+            >
+              <Network className="w-3 h-3" />
+            </Button>
+          </div>
         </div>
+      </div>
 
         <TabsContent value="table">
-          <Card>
-            <CardHeader>
-              <CardTitle>Column Mappings</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Source Column</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Target Relation</TableHead>
-                      <TableHead>Confidence</TableHead>
-                      <TableHead>Coverage</TableHead>
-                      <TableHead>Transforms</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {mappings.map((mapping) => (
-                      <TableRow key={mapping.sourceColumn}>
-                        <TableCell className="font-medium">
-                          <div className="flex items-center gap-2">
-                            {mapping.sourceColumn}
-                            {mapping.isManualOverride && (
-                              <Badge variant="outline" className="text-xs">Manual</Badge>
-                            )}
-                          </div>
-                        </TableCell>
-                        
-                        <TableCell>
-                          <Select 
-                            value={mapping.suggestedType}
-                            onValueChange={(value) => updateMapping(mapping.sourceColumn, { suggestedType: value })}
-                          >
-                            <SelectTrigger className="w-24">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="string">String</SelectItem>
-                              <SelectItem value="number">Number</SelectItem>
-                              <SelectItem value="date">Date</SelectItem>
-                              <SelectItem value="boolean">Boolean</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        
-                        <TableCell>
-                          <Select 
-                            value={mapping.role}
-                            onValueChange={(value) => updateMapping(mapping.sourceColumn, { role: value as any })}
-                          >
-                            <SelectTrigger className="w-32">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="primary_key">
-                                <div className="flex items-center gap-2">
-                                  <Key className="w-4 h-4" />
-                                  Primary Key
-                                </div>
-                              </SelectItem>
-                              <SelectItem value="foreign_key">
-                                <div className="flex items-center gap-2">
-                                  <Link2 className="w-4 h-4" />
-                                  Foreign Key
-                                </div>
-                              </SelectItem>
-                              <SelectItem value="attribute">
-                                <div className="flex items-center gap-2">
-                                  <Type className="w-4 h-4" />
-                                  Attribute
-                                </div>
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        
-                        <TableCell>
-                          {mapping.role === 'foreign_key' && (
-                            <Select 
-                              value={`${mapping.targetDataset}.${mapping.targetColumn}`}
-                              onValueChange={(value) => {
-                                const [dataset, column] = value.split('.');
-                                updateMapping(mapping.sourceColumn, { 
-                                  targetDataset: dataset, 
-                                  targetColumn: column 
-                                });
-                              }}
-                            >
-                              <SelectTrigger className="w-40">
-                                <SelectValue placeholder="Select target..." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {availableDatasets.map(dataset => 
-                                  dataset.columns.map(column => (
-                                    <SelectItem key={`${dataset.id}.${column}`} value={`${dataset.id}.${column}`}>
-                                      {dataset.name}.{column}
-                                    </SelectItem>
-                                  ))
-                                )}
-                              </SelectContent>
-                            </Select>
+          <div className="border rounded-md overflow-hidden">
+            <div className="bg-muted/50 px-2 py-1 border-b">
+              <Label className="text-sm font-medium">Column Mappings</Label>
+            </div>
+            <div className="overflow-x-auto max-h-96">
+              <table className="w-full text-xs">
+                <thead className="bg-muted/30 sticky top-0">
+                  <tr>
+                    <th className="text-left p-1 font-medium">Column</th>
+                    <th className="text-left p-1 font-medium">Type</th>
+                    <th className="text-left p-1 font-medium">Role</th>
+                    <th className="text-left p-1 font-medium">Target</th>
+                    <th className="text-left p-1 font-medium">Conf</th>
+                    <th className="text-left p-1 font-medium">Cov</th>
+                    <th className="text-left p-1 font-medium">Transforms</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {mappings.map((mapping) => (
+                    <tr key={mapping.sourceColumn} className="border-t hover:bg-muted/20">
+                      <td className="p-1">
+                        <div className="flex items-center gap-1">
+                          <span className="font-medium">{mapping.sourceColumn}</span>
+                          {mapping.isManualOverride && (
+                            <Badge variant="outline" className="text-xs px-1 py-0">M</Badge>
                           )}
-                        </TableCell>
-                        
-                        <TableCell>
-                          <Badge className={getConfidenceColor(mapping.confidence)}>
-                            {getConfidenceLabel(mapping.confidence)} ({Math.round(mapping.confidence * 100)}%)
-                          </Badge>
-                        </TableCell>
-                        
-                        <TableCell>
-                          {mapping.coverage && (
-                            <Badge className={getCoverageColor(mapping.coverage)}>
-                              {mapping.coverage}%
-                            </Badge>
-                          )}
-                        </TableCell>
-                        
-                        <TableCell>
-                          <div className="flex gap-1">
-                            {['trim', 'uppercase', 'lowercase'].map(transform => (
-                              <div key={transform} className="flex items-center space-x-1">
-                                <Switch
-                                  checked={mapping.transforms.includes(transform)}
-                                  onCheckedChange={(checked) => {
-                                    const newTransforms = checked 
-                                      ? [...mapping.transforms, transform]
-                                      : mapping.transforms.filter(t => t !== transform);
-                                    updateMapping(mapping.sourceColumn, { transforms: newTransforms });
-                                  }}
-                                  className="scale-75"
-                                />
-                                <Label className="text-xs capitalize">{transform}</Label>
+                        </div>
+                      </td>
+                      
+                      <td className="p-1">
+                        <Select 
+                          value={mapping.suggestedType}
+                          onValueChange={(value) => updateMapping(mapping.sourceColumn, { suggestedType: value })}
+                        >
+                          <SelectTrigger className="h-5 w-16 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="string">Str</SelectItem>
+                            <SelectItem value="number">Num</SelectItem>
+                            <SelectItem value="date">Date</SelectItem>
+                            <SelectItem value="boolean">Bool</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </td>
+                      
+                      <td className="p-1">
+                        <Select 
+                          value={mapping.role}
+                          onValueChange={(value) => updateMapping(mapping.sourceColumn, { role: value as any })}
+                        >
+                          <SelectTrigger className="h-5 w-20 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="primary_key">
+                              <div className="flex items-center gap-1">
+                                <Key className="w-3 h-3" />
+                                PK
                               </div>
-                            ))}
-                          </div>
-                        </TableCell>
-                        
-                        <TableCell>
-                          <Button variant="ghost">
-                            <HelpCircle className="w-4 h-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
+                            </SelectItem>
+                            <SelectItem value="foreign_key">
+                              <div className="flex items-center gap-1">
+                                <Link2 className="w-3 h-3" />
+                                FK
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="attribute">
+                              <div className="flex items-center gap-1">
+                                <Type className="w-3 h-3" />
+                                Attr
+                              </div>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </td>
+                      
+                      <td className="p-1">
+                        {mapping.role === 'foreign_key' && (
+                          <Select 
+                            value={`${mapping.targetDataset}.${mapping.targetColumn}`}
+                            onValueChange={(value) => {
+                              const [dataset, column] = value.split('.');
+                              updateMapping(mapping.sourceColumn, { 
+                                targetDataset: dataset, 
+                                targetColumn: column 
+                              });
+                            }}
+                          >
+                            <SelectTrigger className="h-5 w-24 text-xs">
+                              <SelectValue placeholder="Select..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {availableDatasets.map(dataset => 
+                                dataset.columns.map(column => (
+                                  <SelectItem key={`${dataset.id}.${column}`} value={`${dataset.id}.${column}`}>
+                                    {dataset.name}.{column}
+                                  </SelectItem>
+                                ))
+                              )}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </td>
+                      
+                      <td className="p-1">
+                        <Badge className={`${getConfidenceColor(mapping.confidence)} text-xs px-1 py-0`}>
+                          {getConfidenceLabel(mapping.confidence)[0]}{Math.round(mapping.confidence * 100)}%
+                        </Badge>
+                      </td>
+                      
+                      <td className="p-1">
+                        {mapping.coverage && (
+                          <Badge className={`${getCoverageColor(mapping.coverage)} text-xs px-1 py-0`}>
+                            {mapping.coverage}%
+                          </Badge>
+                        )}
+                      </td>
+                      
+                      <td className="p-1">
+                        <div className="flex gap-1">
+                          {['trim', 'upper', 'lower'].map(transform => (
+                            <div key={transform} className="flex items-center">
+                              <Switch
+                                checked={mapping.transforms.includes(transform)}
+                                onCheckedChange={(checked) => {
+                                  const newTransforms = checked 
+                                    ? [...mapping.transforms, transform]
+                                    : mapping.transforms.filter(t => t !== transform);
+                                  updateMapping(mapping.sourceColumn, { transforms: newTransforms });
+                                }}
+                                className="scale-50"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="graph">
@@ -436,37 +409,15 @@ export const MappingWorkshop = ({ profiledData, onMappingComplete }: MappingWork
         </TabsContent>
       </Tabs>
 
-      {/* Mapping Summary */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CheckCircle className="w-5 h-5" />
-            Mapping Summary
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span>{summary.mapped} fields mapped</span>
-              <span>{summary.relations} relations</span>
-              <span>PK {summary.hasPK ? 'set' : 'not set'}</span>
-            </div>
-            
-            {!summary.hasPK && (
-              <Alert>
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription>
-                  No primary key selected. This may impact data quality and relationships.
-                </AlertDescription>
-              </Alert>
-            )}
-            
-            <div className="text-sm text-muted-foreground">
-              Ready to proceed with validation. {mappings.filter(m => m.confidence < 0.6).length} mappings have low confidence and may need review.
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Compact Mapping Summary */}
+      {!summary.hasPK && (
+        <Alert className="p-2">
+          <AlertTriangle className="h-3 w-3" />
+          <AlertDescription className="text-xs">
+            No primary key set. Consider designating a unique identifier column.
+          </AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 };
