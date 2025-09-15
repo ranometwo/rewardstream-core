@@ -10,13 +10,13 @@ import { Upload, FileSpreadsheet, AlertCircle, CheckCircle, X } from "lucide-rea
 
 interface FileUploadZoneProps {
   onFileSelect: (file: File) => void;
-  onMetadataChange: (metadata: { delimiter: string; encoding: 'UTF-8' | 'UTF-16' | 'ASCII' | 'ISO-8859-1' }) => void;
+  onMetadataChange: (metadata: { delimiter: string; encoding: string }) => void;
   selectedFile: File | null;
 }
 
 export const FileUploadZone = ({ onFileSelect, onMetadataChange, selectedFile }: FileUploadZoneProps) => {
   const [delimiter, setDelimiter] = useState(',');
-  const [encoding, setEncoding] = useState<'UTF-8' | 'UTF-16' | 'ASCII' | 'ISO-8859-1'>('UTF-8');
+  const [encoding, setEncoding] = useState('UTF-8');
   const [preview, setPreview] = useState<string[][]>([]);
   const [errors, setErrors] = useState<string[]>([]);
 
@@ -187,7 +187,7 @@ export const FileUploadZone = ({ onFileSelect, onMetadataChange, selectedFile }:
           
           <div className="space-y-2">
             <Label>Encoding</Label>
-            <Select value={encoding} onValueChange={(value) => setEncoding(value as 'UTF-8' | 'UTF-16' | 'ASCII' | 'ISO-8859-1')}>
+            <Select value={encoding} onValueChange={setEncoding}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

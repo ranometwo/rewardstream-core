@@ -22,7 +22,7 @@ import {
   Sparkles,
   RotateCcw
 } from "lucide-react";
-// RelationshipGraph removed as per requirements
+import { RelationshipGraph } from "./RelationshipGraph";
 
 interface ColumnMapping {
   sourceColumn: string;
@@ -428,14 +428,11 @@ export const MappingWorkshop = ({ profiledData, onMappingComplete }: MappingWork
         </TabsContent>
 
         <TabsContent value="graph">
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <Network className="w-16 h-16 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Relationship Visualization</h3>
-            <p className="text-muted-foreground max-w-md">
-              Advanced relationship mapping and visualization features coming soon. 
-              Use the table view to configure your column mappings.
-            </p>
-          </div>
+          <RelationshipGraph 
+            mappings={mappings}
+            availableDatasets={availableDatasets}
+            onMappingUpdate={updateMapping}
+          />
         </TabsContent>
       </Tabs>
 
