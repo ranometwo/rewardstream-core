@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Layout from "@/components/Layout";
-import { ImportWizard } from "@/components/data-ingestion/ImportWizard";
+import { EnterpriseDataImport } from "@/components/data-ingestion/EnterpriseDataImport";
 import { DataIngestionHistory } from "@/components/data-ingestion/DataIngestionHistory";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -142,11 +142,8 @@ const DataIngestion = () => {
 
         {/* Import Wizard Modal */}
         <Dialog open={showImportWizard} onOpenChange={setShowImportWizard}>
-          <DialogContent className="max-w-[85vw] h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Data Import Wizard</DialogTitle>
-            </DialogHeader>
-            <ImportWizard 
+          <DialogContent className="max-w-[95vw] h-[95vh] overflow-hidden p-0">
+            <EnterpriseDataImport 
               onComplete={() => {
                 setShowImportWizard(false);
                 // Refresh history
