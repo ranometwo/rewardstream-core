@@ -71,10 +71,11 @@ const getStatusVariant = (status: string) => {
 
 interface SchemesListProps {
   onCreateScheme: () => void;
+  onCreateAdvanced: () => void;
   onEditScheme: (schemeId: string) => void;
 }
 
-const SchemesList: React.FC<SchemesListProps> = ({ onCreateScheme, onEditScheme }) => {
+const SchemesList: React.FC<SchemesListProps> = ({ onCreateScheme, onCreateAdvanced, onEditScheme }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [schemes] = useState<Scheme[]>(mockSchemes);
 
