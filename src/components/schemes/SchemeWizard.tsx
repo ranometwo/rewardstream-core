@@ -181,139 +181,153 @@ const SchemeWizard: React.FC<SchemeWizardProps> = ({ onBack, onSchemeSaved }) =>
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      {/* Compact Header */}
       <div className="border-b bg-card shadow-enterprise sticky top-0 z-40">
-        <div className="flex items-center justify-between px-6 py-4">
+        <div className="flex items-center justify-between px-6 py-3">
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon" onClick={onBack}>
-              <ArrowLeft className="h-4 w-4" />
+            <Button variant="ghost" onClick={onBack}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Schemes
             </Button>
+            <div className="h-4 w-px bg-border" />
             <div>
-              <h1 className="text-xl font-bold text-foreground">
+              <h1 className="text-lg font-semibold text-foreground">
                 {config.name || "New Loyalty Scheme"}
               </h1>
-              <div className="flex items-center space-x-2 mt-1">
-                <Badge variant="outline">{config.type}</Badge>
-                <Badge variant="secondary">Draft</Badge>
+              <div className="flex items-center space-x-2">
+                <Badge variant="outline" className="text-xs">{config.type}</Badge>
+                <Badge variant="secondary" className="text-xs">Draft</Badge>
               </div>
             </div>
           </div>
           
-          <div className="flex items-center space-x-3">
-            <Button variant="outline" onClick={handleSaveDraft} className="hidden md:flex">
-              <Save className="h-4 w-4 mr-2" />
-              Save Draft
+          <div className="flex items-center space-x-2">
+            <Button variant="ghost" onClick={handleSaveDraft}>
+              <Save className="h-4 w-4" />
             </Button>
-            <Button variant="outline" className="hidden md:flex">
-              <Eye className="h-4 w-4 mr-2" />
-              Preview
+            <Button variant="ghost">
+              <Eye className="h-4 w-4" />
             </Button>
           </div>
-        </div>
-        
-        {/* Progress */}
-        <div className="px-6 pb-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-foreground">
-              Step {currentStep} of {steps.length}
-            </span>
-            <span className="text-sm text-muted-foreground">
-              {Math.round((currentStep / steps.length) * 100)}% Complete
-            </span>
-          </div>
-          <Progress value={(currentStep / steps.length) * 100} className="h-2" />
         </div>
       </div>
 
       <div className="flex">
-        {/* Left Sidebar - Stepper */}
-        <div className="w-80 bg-card border-r shadow-enterprise p-6 sticky top-[120px] h-fit">
-          <div className="space-y-1">
-            {steps.map((step, index) => (
-              <div
-                key={step.id}
-                className={`flex items-start space-x-3 p-3 rounded-lg cursor-pointer transition-colors ${
-                  currentStep === step.id
-                    ? "bg-primary/10 border border-primary/20"
-                    : currentStep > step.id
-                    ? "bg-success/5 border border-success/20"
-                    : "hover:bg-accent"
-                }`}
-                onClick={() => {
-                  if (step.id <= currentStep || (step.id === currentStep + 1 && canProceed(currentStep))) {
-                    setCurrentStep(step.id);
-                  }
-                }}
-              >
-                <div
-                  className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
-                    currentStep === step.id
-                      ? "bg-primary text-primary-foreground"
-                      : currentStep > step.id
-                      ? "bg-success text-success-foreground"
-                      : "bg-muted text-muted-foreground"
-                  }`}
-                >
-                  {step.id}
+        {/* Vertical Stepper */}
+        <div className="w-72 bg-card border-r p-4 sticky top-[80px] h-[calc(100vh-80px)]">
+          <div className="space-y-2">
+            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-4">
+              Progress: {currentStep} of {steps.length}
+            </div>
+            {steps.map((step, index) => {
+              const isActive = currentStep === step.id;
+              const isCompleted = currentStep > step.id;
+              const isAccessible = step.id <= currentStep || (step.id === currentStep + 1 && canProceed(currentStep));
+              
+              return (
+                <div key={step.id} className="relative">
+                  {/* Connection Line */}
+                  {index < steps.length - 1 && (
+                    <div 
+                      className={`absolute left-4 top-8 w-0.5 h-8 ${
+                        isCompleted ? 'bg-success' : 'bg-border'
+                      }`}
+                    />
+                  )}
+                  
+                  <div
+                    className={`flex items-start space-x-3 p-3 rounded-lg cursor-pointer transition-all hover:bg-accent/50 ${
+                      isActive 
+                        ? "bg-primary/10 border border-primary/20 shadow-sm" 
+                        : isCompleted
+                        ? "bg-success/5" 
+                        : ""
+                    } ${!isAccessible ? 'cursor-not-allowed opacity-60' : ''}`}
+                    onClick={() => {
+                      if (isAccessible) {
+                        setCurrentStep(step.id);
+                      }
+                    }}
+                  >
+                    <div
+                      className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium border-2 ${
+                        isActive
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : isCompleted
+                          ? "bg-success text-success-foreground border-success"
+                          : "bg-background text-muted-foreground border-border"
+                      }`}
+                    >
+                      {isCompleted ? "✓" : step.id}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-medium text-sm leading-tight ${
+                        isActive ? "text-primary" : isCompleted ? "text-success" : "text-foreground"
+                      }`}>
+                        {step.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5 leading-tight">
+                        {step.description}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className={`font-medium text-sm ${
-                    currentStep >= step.id ? "text-foreground" : "text-muted-foreground"
-                  }`}>
-                    {step.name}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {step.description}
-                  </p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
+          </div>
+          
+          {/* Mini Context Panel */}
+          <div className="mt-6 p-3 bg-accent/30 rounded-lg">
+            <h3 className="text-sm font-medium text-foreground mb-2">Quick Info</h3>
+            <div className="space-y-1 text-xs text-muted-foreground">
+              <div>Type: {config.type}</div>
+              {config.startDate && (
+                <div>Start: {config.startDate.toLocaleDateString()}</div>
+              )}
+              {config.endDate && (
+                <div>End: {config.endDate.toLocaleDateString()}</div>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="flex-1 flex">
-          {/* Step Content */}
-          <div className="flex-1 p-6 max-w-4xl">
+        {/* Main Content Area */}
+        <div className="flex-1 max-w-none">
+          <div className="p-6">
             {renderStepContent()}
-            
-            {/* Navigation */}
-            <div className="flex items-center justify-between mt-8 pt-6 border-t">
-              <Button
-                variant="outline"
-                onClick={handlePrevious}
-                disabled={currentStep === 1}
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Previous
-              </Button>
-              
-              <div className="flex items-center space-x-3">
-                {currentStep < steps.length && (
-                  <Button
-                    onClick={handleNext}
-                    disabled={!canProceed(currentStep)}
-                    className="shadow-enterprise"
-                  >
-                    Next Step
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                  </Button>
-                )}
-                {currentStep === steps.length && (
-                  <Button
-                    onClick={handlePublish}
-                    className="bg-gradient-primary shadow-glass"
-                  >
-                    Publish Scheme
-                  </Button>
-                )}
-              </div>
-            </div>
           </div>
-
-          {/* Right Context Panel */}
-          <div className="w-80 p-6 bg-accent/30 border-l sticky top-[120px] h-fit">
-            <ContextPanel config={config} currentStep={currentStep} />
+          
+          {/* Sticky Navigation */}
+          <div className="sticky bottom-0 bg-card border-t p-4 flex items-center justify-between">
+            <Button
+              variant="outline"
+              onClick={handlePrevious}
+              disabled={currentStep === 1}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Previous
+            </Button>
+            
+            <div className="flex items-center space-x-2">
+              {currentStep < steps.length && (
+                <Button
+                  onClick={handleNext}
+                  disabled={!canProceed(currentStep)}
+                  className="bg-gradient-primary shadow-glass"
+                >
+                  Next Step
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              )}
+              {currentStep === steps.length && (
+                <Button
+                  onClick={handlePublish}
+                  className="bg-gradient-primary shadow-glass"
+                >
+                  Publish Scheme
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>
